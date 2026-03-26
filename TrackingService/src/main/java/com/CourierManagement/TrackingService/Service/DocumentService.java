@@ -45,20 +45,21 @@ public class DocumentService {
      Path   targetPath  = uploadPath.resolve(uniqueName);
 
      
-     Files.copy(file.getInputStream(), targetPath, StandardCopyOption.REPLACE_EXISTING);
+     Files.copy(file.getInputStream(), targetPath, StandardCopyOption.REPLACE_EXISTING); // file is physically stored on your system
 
 
-     Document doc = Document.builder()
+     Document doc = Document.builder() //you are preparing data to store in database
              .deliveryId(deliveryId)
              .trackingNumber(trackingNumber)
              .fileName(originalName)
              .filePath(targetPath.toString())
-             .documentType(documentType)
-             .contentType(file.getContentType())
+             .documentType(documentType)// eg. invoice,label ,proof od delivery
+             .contentType(file.getContentType()) // what kind of file format it is
              .uploadedBy(uploadedBy)
              .build();
 
-     return toResponse(repository.save(doc));
+     return toResponse(repository.save(doc)); // converts entity->DTO,  sends response back to client
+     
  }
 
  public List<DocumentResponse> getDocumentsByDelivery(String deliveryId) {
@@ -67,7 +68,7 @@ public class DocumentService {
          throw new TrackingNotFoundException(
              "No documents found for delivery: " + deliveryId);
      }
-     return docs.stream().map(this::toResponse).collect(Collectors.toList());
+     return docs.stream().map(this::toResponse).collect(Collectors.toList()); // toResponse() convert database entity into API response
  }
 
  private DocumentResponse toResponse(Document d) {

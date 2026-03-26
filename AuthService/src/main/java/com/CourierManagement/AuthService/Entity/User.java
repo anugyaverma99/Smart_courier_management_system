@@ -1,33 +1,48 @@
 package com.CourierManagement.AuthService.Entity;
 
+import jakarta.persistence.*;
+import lombok.*;
+import java.time.LocalDateTime;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-
-@NoArgsConstructor
+@Entity
+@Table(name = "users")
+@Getter 
+@Setter 
+@NoArgsConstructor 
 @AllArgsConstructor
 @Builder
-@Data
-@Entity
 public class User {
-	@Id
-	@GeneratedValue(strategy=GenerationType.IDENTITY)
-	private Long id;
-	private String username;
-	@Column(unique = true)
-	private String email;
-	private String password;
-	@Enumerated(EnumType.STRING)
-	private Role role;
-	
 
+ @Id
+ @GeneratedValue(strategy = GenerationType.IDENTITY)
+ private Long id;
+
+ @Column(nullable = false, unique = true)
+ private String email;
+
+ @Column(nullable = false)
+ private String password;  
+
+ @Column(nullable = false)
+ private String fullName;
+
+ private String phone;
+
+ @Enumerated(EnumType.STRING)
+ @Column(nullable = false)
+ private Role role;        
+
+ private boolean active;
+
+ @Column(name = "created_at", updatable = false)
+ private LocalDateTime createdAt;
+
+ @PrePersist
+ public void prePersist() {
+     this.createdAt = LocalDateTime.now();
+     this.active = true;
+     if (this.role == null) {
+         this.role = Role.CUSTOMER; 
+     }
+ }
 }

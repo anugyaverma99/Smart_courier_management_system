@@ -1,45 +1,61 @@
 package com.CourierManagement.DeliveryService.Controller;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import com.CourierManagement.DeliveryService.Entity.Delivery;
-import com.CourierManagement.DeliveryService.Entity.Status;
 import com.CourierManagement.DeliveryService.Service.DeliveryService;
-
 import java.util.List;
+import com.CourierManagement.DeliveryService.Dto.CreateDeliveryRequest;
+import com.CourierManagement.DeliveryService.Dto.DeliveryResponse;
+import com.CourierManagement.DeliveryService.Dto.UpdateStatusRequest;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
+
 
 @RestController
-@RequestMapping("/deliveries")
+@RequestMapping("/api/deliveries")
+@RequiredArgsConstructor
 public class DeliveryController {
 
-    private final DeliveryService service;
+ private final DeliveryService service;
 
-    public DeliveryController(DeliveryService service) {
-        this.service = service;
-    }
+ 
+ @PostMapping
+ @PreAuthorize("hasRole('CUSTOMER')")
+ public ResponseEntity<DeliveryResponse> createDelivery(
+         @RequestBody CreateDeliveryRequest request) {
+     return ResponseEntity
+             .status(HttpStatus.CREATED)
+             .body(service.createDelivery(request));
+ }
 
-    // Create delivery
-    @PostMapping
-    public ResponseEntity<Delivery> createDelivery(@RequestBody Delivery delivery) {
-        return ResponseEntity.ok(service.createDelivery(delivery));
-    }
 
-    // Get delivery by ID
-    @GetMapping("/{id}")
-    public ResponseEntity<Delivery> getDelivery(@PathVariable Long id) {
-        return ResponseEntity.ok(service.getDelivery(id));
-    }
+ @GetMapping("/my")
+ @PreAuthorize("hasRole('CUSTOMER')")
+ public ResponseEntity<List<DeliveryResponse>> getMyDeliveries(
+         @RequestParam String customerId) {
+     return ResponseEntity.ok(service.getMyDeliveries(customerId));
+ }
 
-    // Get all deliveries for a customer
-    @GetMapping("/customer/{customerId}")
-    public ResponseEntity<List<Delivery>> getCustomerDeliveries(@PathVariable Long customerId) {
-        return ResponseEntity.ok(service.getDeliveriesByCustomer(customerId));
-    }
+ @GetMapping("/{id}")
+ @PreAuthorize("hasRole('CUSTOMER') or hasRole('ADMIN')")
+ public ResponseEntity<DeliveryResponse> getById(
+         @PathVariable Long id) {
+     return ResponseEntity.ok(service.getById(id));
+ }
 
-    // Update delivery status
-    @PutMapping("/{id}/status")
-    public ResponseEntity<Delivery> updateStatus(@PathVariable Long id,
-                                                 @RequestParam Status status) {
-        return ResponseEntity.ok(service.updateStatus(id, status));
-    }
+
+ @GetMapping("/track/{trackingNumber}")
+ @PreAuthorize("hasRole('CUSTOMER') or hasRole('ADMIN')")
+ public ResponseEntity<DeliveryResponse> getByTrackingNumber(
+         @PathVariable String trackingNumber) {
+     return ResponseEntity.ok(service.getByTrackingNumber(trackingNumber));
+ }
+
+ @PutMapping("/{id}/status")
+ @PreAuthorize("hasRole('ADMIN')")
+ public ResponseEntity<DeliveryResponse> updateStatus(
+         @PathVariable Long id,
+         @RequestBody UpdateStatusRequest request) {
+     return ResponseEntity.ok(service.updateStatus(id, request));
+ }
 }

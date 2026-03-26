@@ -1,6 +1,6 @@
 package com.CourierManagement.DeliveryService.Entity;
 
-public enum Status {
+public enum DeliveryStatus {
 
     DRAFT,
     BOOKED,

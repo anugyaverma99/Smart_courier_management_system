@@ -1,6 +1,9 @@
 package com.CourierManagement.AuthService.Controller;
 
 import lombok.RequiredArgsConstructor;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import com.CourierManagement.AuthService.Dto.AuthResponse;
@@ -16,12 +19,17 @@ public class AuthController {
     private final AuthService authService;
 
     @PostMapping("/signup")
-    public String signup(@RequestBody SignupRequest request) {
-        return authService.signup(request);
+    public ResponseEntity<AuthResponse> signup(
+            @RequestBody SignupRequest request) {
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .body(authService.signup(request));
     }
 
+    
     @PostMapping("/login")
-    public AuthResponse login(@RequestBody LoginRequest request) {
-        return authService.login(request);
+    public ResponseEntity<AuthResponse> login(
+            @RequestBody LoginRequest request) {
+        return ResponseEntity.ok(authService.login(request));
     }
 }

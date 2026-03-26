@@ -1,93 +1,229 @@
+
 package com.CourierManagement.DeliveryService.Service;
-import org.springframework.stereotype.Service;
 
+import com.CourierManagement.DeliveryService.Dto.AddressDto;
+import com.CourierManagement.DeliveryService.Dto.CreateDeliveryRequest;
+import com.CourierManagement.DeliveryService.Dto.DeliveryResponse;
+import com.CourierManagement.DeliveryService.Dto.PackageDto;
+import com.CourierManagement.DeliveryService.Dto.UpdateStatusRequest;
+import com.CourierManagement.DeliveryService.Entity.Address;
 import com.CourierManagement.DeliveryService.Entity.Delivery;
-import com.CourierManagement.DeliveryService.Entity.Status;
+import com.CourierManagement.DeliveryService.Entity.DeliveryStatus;
+import com.CourierManagement.DeliveryService.Entity.PackageDetails;
+import com.CourierManagement.DeliveryService.Exception.DeliveryServiceException;
 import com.CourierManagement.DeliveryService.Repository.DeliveryRepository;
-
-import java.time.LocalDateTime;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
 import java.util.List;
+import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
 public class DeliveryService {
 
     private final DeliveryRepository repository;
 
-    public DeliveryService(DeliveryRepository repository) {
-        this.repository = repository;
+    
+    public DeliveryResponse createDelivery(CreateDeliveryRequest request) {
+
+        
+        Address sender = Address.builder()
+                .name(request.getSenderAddress().getName())
+                .phone(request.getSenderAddress().getPhone())
+                .addressLine(request.getSenderAddress().getAddressLine())
+                .city(request.getSenderAddress().getCity())
+                .state(request.getSenderAddress().getState())
+                .zipCode(request.getSenderAddress().getZipCode())
+                .country(request.getSenderAddress().getCountry())
+                .build();
+
+        
+        Address receiver = Address.builder()
+                .name(request.getReceiverAddress().getName())
+                .phone(request.getReceiverAddress().getPhone())
+                .addressLine(request.getReceiverAddress().getAddressLine())
+                .city(request.getReceiverAddress().getCity())
+                .state(request.getReceiverAddress().getState())
+                .zipCode(request.getReceiverAddress().getZipCode())
+                .country(request.getReceiverAddress().getCountry())
+                .build();
+
+        
+        PackageDetails pkg = PackageDetails.builder()
+                .description(request.getPackageDetails().getDescription())
+                .weightKg(request.getPackageDetails().getWeightKg())
+                .lengthCm(request.getPackageDetails().getLengthCm())
+                .widthCm(request.getPackageDetails().getWidthCm())
+                .heightCm(request.getPackageDetails().getHeightCm())
+                .serviceType(request.getPackageDetails().getServiceType())
+                .declaredValue(request.getPackageDetails().getDeclaredValue())
+                .build();
+
+        // Calculate charge based on weight and service type
+        double charge = calculateCharge(
+                request.getPackageDetails().getWeightKg(),
+                request.getPackageDetails().getServiceType());
+
+        // Generate unique tracking number
+        String trackingNumber = "TRK-" + UUID.randomUUID()
+                .toString().substring(0, 8).toUpperCase();
+
+        // Build delivery — starts at DRAFT status always
+        Delivery delivery = Delivery.builder()
+                .trackingNumber(trackingNumber)
+                .customerId(request.getCustomerId())
+                .senderAddress(sender)
+                .receiverAddress(receiver)
+                .packageDetails(pkg)
+                .charge(charge)
+                .pickupScheduledAt(request.getPickupScheduledAt())
+                .status(DeliveryStatus.DRAFT)
+                .build();
+
+        return toResponse(repository.save(delivery));
     }
 
-    // Create delivery
-    public Delivery createDelivery(Delivery delivery) {
-        delivery.setStatus(Status.DRAFT);
-        delivery.setBookedAt(LocalDateTime.now());
-        return repository.save(delivery);
-    }
+    
+    public List<DeliveryResponse> getMyDeliveries(String customerId) {
+        List<Delivery> deliveries =
+                repository.findByCustomerIdOrderByCreatedAtDesc(customerId);
 
-    // Get all deliveries of a customer
-    public List<Delivery> getDeliveriesByCustomer(Long customerId) {
-        return repository.findByCustomerId(customerId);
-    }
-
-    // Get delivery by ID
-    public Delivery getDelivery(Long id) {
-        return repository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Delivery not found"));
-    }
-
-    // Update delivery status
-    public Delivery updateStatus(Long id, Status newStatus) {
-        Delivery delivery = getDelivery(id);
-        Status current = delivery.getStatus();
-
-        switch (current) {
-            case DRAFT:
-                if (newStatus == Status.BOOKED) 
-                    delivery.setBookedAt(LocalDateTime.now());
-                else 
-                    throw new RuntimeException("DRAFT can only go to BOOKED");
-                break;
-
-            case BOOKED:
-                if (newStatus == Status.PICKED_UP) 
-                    delivery.setPickedUpAt(LocalDateTime.now());
-                else if (newStatus != Status.DELAYED && newStatus != Status.FAILED)
-                    throw new RuntimeException("BOOKED can only go to PICKED_UP, DELAYED, or FAILED");
-                break;
-
-            case PICKED_UP:
-                if (newStatus != Status.IN_TRANSIT && newStatus != Status.DELAYED && newStatus != Status.FAILED)
-                    throw new RuntimeException("PICKED_UP can only go to IN_TRANSIT, DELAYED, or FAILED");
-                break;
-
-            case IN_TRANSIT:
-                if (newStatus != Status.OUT_FOR_DELIVERY && newStatus != Status.DELAYED && newStatus != Status.FAILED)
-                    throw new RuntimeException("IN_TRANSIT can only go to OUT_FOR_DELIVERY, DELAYED, or FAILED");
-                break;
-
-            case OUT_FOR_DELIVERY:
-                if (newStatus == Status.DELIVERED) 
-                    delivery.setDeliveredAt(LocalDateTime.now());
-                else if (newStatus != Status.DELAYED && newStatus != Status.FAILED)
-                    throw new RuntimeException("OUT_FOR_DELIVERY can only go to DELIVERED, DELAYED, or FAILED");
-                break;
-
-            case DELAYED:
-                if (newStatus != Status.IN_TRANSIT && newStatus != Status.OUT_FOR_DELIVERY && newStatus != Status.FAILED)
-                    throw new RuntimeException("DELAYED can only go to IN_TRANSIT, OUT_FOR_DELIVERY, or FAILED");
-                break;
-
-            case FAILED:
-                if (newStatus != Status.RETURNED)
-                    throw new RuntimeException("FAILED can only go to RETURNED");
-                break;
-
-            case DELIVERED:
-            case RETURNED:
-                throw new RuntimeException(current + " cannot be updated further");
+        if (deliveries.isEmpty()) {
+            throw new DeliveryServiceException(
+                    "No deliveries found for customer: " + customerId);
         }
+        return deliveries.stream()
+                .map(this::toResponse)
+                .collect(Collectors.toList());
+    }
 
-        delivery.setStatus(newStatus);
-        return repository.save(delivery);
+    
+    public DeliveryResponse getById(Long id) {
+        return repository.findById(id)
+                .map(this::toResponse)
+                .orElseThrow(() -> new DeliveryServiceException(
+                        "Delivery not found: " + id));
+    }
+
+    
+    public DeliveryResponse getByTrackingNumber(String trackingNumber) {
+        return repository.findByTrackingNumber(trackingNumber)
+                .map(this::toResponse)
+                .orElseThrow(() -> new DeliveryServiceException(
+                        "Delivery not found for tracking number: " + trackingNumber));
+    }
+
+    
+    public DeliveryResponse updateStatus(Long id, UpdateStatusRequest request) {
+
+        Delivery delivery = repository.findById(id)
+                .orElseThrow(() -> new DeliveryServiceException(
+                        "Delivery not found: " + id));
+
+        
+        validateStatusTransition(delivery.getStatus(), request.getStatus());
+
+        delivery.setStatus(request.getStatus());
+        return toResponse(repository.save(delivery));
+    }
+
+   
+    private double calculateCharge(double weightKg, String serviceType) {
+        double baseRate;
+
+        switch (serviceType.toLowerCase()) {
+            case "express":
+                baseRate = 80.0;
+                break;
+            case "international":
+                baseRate = 200.0;
+                break;
+            default: // domestic
+                baseRate = 40.0;
+                break;
+        }
+        
+        return baseRate * Math.max(weightKg, 1.0);
+    }
+
+   
+    private void validateStatusTransition(
+            DeliveryStatus current, DeliveryStatus next) {
+
+        List<DeliveryStatus> lifecycle = List.of(
+                DeliveryStatus.DRAFT,
+                DeliveryStatus.BOOKED,
+                DeliveryStatus.PICKED_UP,
+                DeliveryStatus.IN_TRANSIT,
+                DeliveryStatus.OUT_FOR_DELIVERY,
+                DeliveryStatus.DELIVERED
+        );
+
+       
+        List<DeliveryStatus> exceptionStates = List.of(
+                DeliveryStatus.DELAYED,
+                DeliveryStatus.FAILED,
+                DeliveryStatus.RETURNED
+        );
+
+        if (exceptionStates.contains(next)) return;
+
+        int currentIndex = lifecycle.indexOf(current);
+        int nextIndex    = lifecycle.indexOf(next);
+
+        if (nextIndex <= currentIndex) {
+            throw new DeliveryServiceException(
+                    "Invalid status transition from "
+                    + current + " to " + next);
+        }
+    }
+
+   
+    private DeliveryResponse toResponse(Delivery d) {
+
+        AddressDto senderDTO = AddressDto.builder()
+                .name(d.getSenderAddress().getName())
+                .phone(d.getSenderAddress().getPhone())
+                .addressLine(d.getSenderAddress().getAddressLine())
+                .city(d.getSenderAddress().getCity())
+                .state(d.getSenderAddress().getState())
+                .zipCode(d.getSenderAddress().getZipCode())
+                .country(d.getSenderAddress().getCountry())
+                .build();
+
+        AddressDto receiverDTO = AddressDto.builder()
+                .name(d.getReceiverAddress().getName())
+                .phone(d.getReceiverAddress().getPhone())
+                .addressLine(d.getReceiverAddress().getAddressLine())
+                .city(d.getReceiverAddress().getCity())
+                .state(d.getReceiverAddress().getState())
+                .zipCode(d.getReceiverAddress().getZipCode())
+                .country(d.getReceiverAddress().getCountry())
+                .build();
+
+        PackageDto packageDTO = PackageDto.builder()
+                .description(d.getPackageDetails().getDescription())
+                .weightKg(d.getPackageDetails().getWeightKg())
+                .lengthCm(d.getPackageDetails().getLengthCm())
+                .widthCm(d.getPackageDetails().getWidthCm())
+                .heightCm(d.getPackageDetails().getHeightCm())
+                .serviceType(d.getPackageDetails().getServiceType())
+                .declaredValue(d.getPackageDetails().getDeclaredValue())
+                .build();
+
+        return DeliveryResponse.builder()
+                .id(d.getId())
+                .trackingNumber(d.getTrackingNumber())
+                .customerId(d.getCustomerId())
+                .senderAddress(senderDTO)
+                .receiverAddress(receiverDTO)
+                .packageDetails(packageDTO)
+                .status(d.getStatus())
+                .charge(d.getCharge())
+                .pickupScheduledAt(d.getPickupScheduledAt())
+                .createdAt(d.getCreatedAt())
+                .updatedAt(d.getUpdatedAt())
+                .build();
     }
 }
