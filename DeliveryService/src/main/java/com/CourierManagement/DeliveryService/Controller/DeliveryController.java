@@ -2,6 +2,9 @@ package com.CourierManagement.DeliveryService.Controller;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import com.CourierManagement.DeliveryService.Service.DeliveryService;
+
+import jakarta.validation.Valid;
+
 import java.util.List;
 import com.CourierManagement.DeliveryService.Dto.CreateDeliveryRequest;
 import com.CourierManagement.DeliveryService.Dto.DeliveryResponse;
@@ -12,7 +15,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 
 
 @RestController
-@RequestMapping("/api/deliveries")
+@RequestMapping("/deliveries")
 @RequiredArgsConstructor
 public class DeliveryController {
 
@@ -22,7 +25,7 @@ public class DeliveryController {
  @PostMapping
  @PreAuthorize("hasRole('CUSTOMER')")
  public ResponseEntity<DeliveryResponse> createDelivery(
-         @RequestBody CreateDeliveryRequest request) {
+         @Valid @RequestBody CreateDeliveryRequest request) {
      return ResponseEntity
              .status(HttpStatus.CREATED)
              .body(service.createDelivery(request));
@@ -32,7 +35,7 @@ public class DeliveryController {
  @GetMapping("/my")
  @PreAuthorize("hasRole('CUSTOMER')")
  public ResponseEntity<List<DeliveryResponse>> getMyDeliveries(
-         @RequestParam String customerId) {
+          @RequestParam String customerId) {
      return ResponseEntity.ok(service.getMyDeliveries(customerId));
  }
 
@@ -55,7 +58,7 @@ public class DeliveryController {
  @PreAuthorize("hasRole('ADMIN')")
  public ResponseEntity<DeliveryResponse> updateStatus(
          @PathVariable Long id,
-         @RequestBody UpdateStatusRequest request) {
+         @Valid @RequestBody UpdateStatusRequest request) {
      return ResponseEntity.ok(service.updateStatus(id, request));
  }
 }

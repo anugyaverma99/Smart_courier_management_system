@@ -14,7 +14,7 @@ import java.io.IOException;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/tracking/documents")
+@RequestMapping("/tracking/documents")
 @RequiredArgsConstructor
 public class DocumentController {
 

@@ -15,7 +15,7 @@ import com.CourierManagement.TrackingService.Service.DeliveryProofService;
 import java.io.IOException;
 
 @RestController
-@RequestMapping("/api/tracking")
+@RequestMapping("/tracking")
 @RequiredArgsConstructor
 public class DeliveryProofController {
 

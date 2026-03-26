@@ -3,7 +3,11 @@ package com.CourierManagement.AdminService.Service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import com.CourierManagement.AdminService.Client.DeliveryClient;
+import com.CourierManagement.AdminService.Client.TrackingClient;
+import com.CourierManagement.AdminService.Dto.DeliveryDto;
 import com.CourierManagement.AdminService.Dto.DeliveryMonitorResponse;
+import com.CourierManagement.AdminService.Dto.TrackingDto;
 import com.CourierManagement.AdminService.Entity.DeliveryMonitor;
 import com.CourierManagement.AdminService.Entity.DeliveryStatus;
 import com.CourierManagement.AdminService.Exception.AdminServiceException;
@@ -17,6 +21,8 @@ import java.util.stream.Collectors;
 public class DeliveryMonitorService {
 
  private final DeliveryMonitorRepository repository;
+ private final DeliveryClient deliveryClient;    
+ private final TrackingClient trackingClient;
 
 
  public List<DeliveryMonitorResponse> getAllDeliveries() {
@@ -41,14 +47,42 @@ public class DeliveryMonitorService {
              .map(this::toResponse)
              .collect(Collectors.toList());
  }
-
+ 
  // Single delivery detail
- public DeliveryMonitorResponse getByDeliveryId(String deliveryId) {
-     return repository.findByDeliveryId(deliveryId)
-             .map(this::toResponse)
-             .orElseThrow(() -> new AdminServiceException(
-                     "Delivery not found: " + deliveryId));
- }
+//Single delivery detail — enriched with live data from other services
+public DeliveryMonitorResponse getByDeliveryId(String deliveryId) {
+
+  DeliveryMonitor monitor = repository.findByDeliveryId(deliveryId)
+          .orElseThrow(() -> new AdminServiceException(
+                  "Delivery not found: " + deliveryId));
+
+  // ── Feign call: get live delivery details from Delivery Service ──
+  DeliveryDto liveDelivery = deliveryClient.getDeliveryById(
+          deliveryId);
+
+  // ── Feign call: get latest tracking status from Tracking Service ──
+  TrackingDto latestTracking = trackingClient.getLatestStatus(
+          monitor.getTrackingNumber());
+
+  // build response with both local + live data in one builder chain
+  return DeliveryMonitorResponse.builder()
+          // ── local DB fields ──
+          .id(monitor.getId())
+          .deliveryId(monitor.getDeliveryId())
+          .trackingNumber(monitor.getTrackingNumber())
+          .customerName(monitor.getCustomerName())
+          .senderCity(monitor.getSenderCity())
+          .receiverCity(monitor.getRecieverCity())
+          .currentStatus(monitor.getCurrentStatus())
+          .assignedHub(monitor.getAssignedHub())
+          .lastUpdated(monitor.getLastUpdated())
+          // ── live fields from Feign ──
+          .liveSenderName(liveDelivery.getSenderName())
+          .liveReceiverName(liveDelivery.getReceiverName())
+          .latestTrackingStatus(latestTracking.getStatus())
+          .latestTrackingLocation(latestTracking.getLocation())
+          .build();
+}
 
  // Called by Delivery Service when status changes — keeps admin snapshot in sync
  public DeliveryMonitorResponse updateStatus(

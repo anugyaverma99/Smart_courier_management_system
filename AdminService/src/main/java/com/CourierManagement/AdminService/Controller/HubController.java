@@ -4,6 +4,8 @@ package com.CourierManagement.AdminService.Controller;
 import com.CourierManagement.AdminService.Dto.HubRequest;
 import com.CourierManagement.AdminService.Dto.HubResponse;
 import com.CourierManagement.AdminService.Service.HubService;
+
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -12,7 +14,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/admin/hubs")
+@RequestMapping("/admin/hubs")
 @RequiredArgsConstructor
 public class HubController {
 
@@ -22,7 +24,7 @@ public class HubController {
  @PostMapping
  @PreAuthorize("hasRole('ADMIN')")
  public ResponseEntity<HubResponse> createHub(
-         @RequestBody HubRequest request) {
+         @Valid @RequestBody HubRequest request) {
      return ResponseEntity
              .status(HttpStatus.CREATED)
              .body(service.createHub(request));

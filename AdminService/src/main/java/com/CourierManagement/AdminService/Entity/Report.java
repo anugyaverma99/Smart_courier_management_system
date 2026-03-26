@@ -33,6 +33,8 @@ public class Report {
  private int failedCount;
  private int delayedCount;
  private int returnedCount;
+ private int liveDeliveryCount;
+ private int totalTrackingEvents;
 
  @Column(name = "generated_by")
  private String generatedBy;

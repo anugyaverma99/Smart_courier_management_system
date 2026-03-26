@@ -8,10 +8,12 @@ import com.CourierManagement.TrackingService.Dto.TrackingEventRequest;
 import com.CourierManagement.TrackingService.Dto.TrackingEventResponse;
 import com.CourierManagement.TrackingService.Service.TrackingEventService;
 
+import jakarta.validation.Valid;
+
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/tracking")
+@RequestMapping("/tracking")
 @RequiredArgsConstructor
 public class TrackingEventController {
 
@@ -19,7 +21,7 @@ public class TrackingEventController {
 
  @PostMapping("/events")
  public ResponseEntity<TrackingEventResponse> addEvent(
-         @RequestBody TrackingEventRequest request) {
+        @Valid @RequestBody TrackingEventRequest request) {
      return ResponseEntity
              .status(HttpStatus.CREATED)
              .body(service.addEvent(request));

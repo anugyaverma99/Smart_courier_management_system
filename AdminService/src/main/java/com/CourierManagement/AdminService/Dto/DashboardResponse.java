@@ -16,4 +16,6 @@ public class DashboardResponse {
  private long outForDelivery;
  private long exceptions;      // DELAYED , FAILED , RETURNED
  private long activeHubs;
+ private int liveDeliveryCount;       // live from Delivery Service
+ private long totalTrackingEvents;
 }

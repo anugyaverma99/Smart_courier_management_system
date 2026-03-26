@@ -1,6 +1,6 @@
-
 package com.CourierManagement.DeliveryService.Service;
 
+import com.CourierManagement.DeliveryService.Client.AdminClient;
 import com.CourierManagement.DeliveryService.Dto.AddressDto;
 import com.CourierManagement.DeliveryService.Dto.CreateDeliveryRequest;
 import com.CourierManagement.DeliveryService.Dto.DeliveryResponse;
@@ -13,21 +13,22 @@ import com.CourierManagement.DeliveryService.Entity.PackageDetails;
 import com.CourierManagement.DeliveryService.Exception.DeliveryServiceException;
 import com.CourierManagement.DeliveryService.Repository.DeliveryRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class DeliveryService {
 
     private final DeliveryRepository repository;
+    private final AdminClient adminClient;   // ← notifies Admin Service on status changes
 
-    
     public DeliveryResponse createDelivery(CreateDeliveryRequest request) {
 
-        
         Address sender = Address.builder()
                 .name(request.getSenderAddress().getName())
                 .phone(request.getSenderAddress().getPhone())
@@ -38,7 +39,6 @@ public class DeliveryService {
                 .country(request.getSenderAddress().getCountry())
                 .build();
 
-        
         Address receiver = Address.builder()
                 .name(request.getReceiverAddress().getName())
                 .phone(request.getReceiverAddress().getPhone())
@@ -49,7 +49,6 @@ public class DeliveryService {
                 .country(request.getReceiverAddress().getCountry())
                 .build();
 
-        
         PackageDetails pkg = PackageDetails.builder()
                 .description(request.getPackageDetails().getDescription())
                 .weightKg(request.getPackageDetails().getWeightKg())
@@ -81,10 +80,22 @@ public class DeliveryService {
                 .status(DeliveryStatus.DRAFT)
                 .build();
 
-        return toResponse(repository.save(delivery));
+        Delivery saved = repository.save(delivery);
+
+        // ── Feign call: notify Admin Service about new delivery ──
+        try {
+            adminClient.updateMonitorStatus(
+                    saved.getId().toString(),
+                    DeliveryStatus.DRAFT.name());
+        } catch (Exception e) {
+            // log but don't fail — Admin sync is non-critical
+            log.warn("Admin Service notification failed for new delivery {}: {}",
+                    saved.getId(), e.getMessage());
+        }
+
+        return toResponse(saved);
     }
 
-    
     public List<DeliveryResponse> getMyDeliveries(String customerId) {
         List<Delivery> deliveries =
                 repository.findByCustomerIdOrderByCreatedAtDesc(customerId);
@@ -98,7 +109,6 @@ public class DeliveryService {
                 .collect(Collectors.toList());
     }
 
-    
     public DeliveryResponse getById(Long id) {
         return repository.findById(id)
                 .map(this::toResponse)
@@ -106,7 +116,11 @@ public class DeliveryService {
                         "Delivery not found: " + id));
     }
 
-    
+    // called by Tracking Service via Feign to verify delivery exists
+    public boolean existsById(Long id) {
+        return repository.existsById(id);
+    }
+
     public DeliveryResponse getByTrackingNumber(String trackingNumber) {
         return repository.findByTrackingNumber(trackingNumber)
                 .map(this::toResponse)
@@ -114,24 +128,33 @@ public class DeliveryService {
                         "Delivery not found for tracking number: " + trackingNumber));
     }
 
-    
     public DeliveryResponse updateStatus(Long id, UpdateStatusRequest request) {
 
         Delivery delivery = repository.findById(id)
                 .orElseThrow(() -> new DeliveryServiceException(
                         "Delivery not found: " + id));
 
-        
         validateStatusTransition(delivery.getStatus(), request.getStatus());
 
         delivery.setStatus(request.getStatus());
-        return toResponse(repository.save(delivery));
+        Delivery saved = repository.save(delivery);
+
+        // ── Feign call: notify Admin Service about status change ──
+        try {
+            adminClient.updateMonitorStatus(
+                    saved.getId().toString(),
+                    saved.getStatus().name());
+        } catch (Exception e) {
+            // log but don't fail — Admin sync is non-critical
+            log.warn("Admin Service notification failed for delivery {} status {}: {}",
+                    saved.getId(), saved.getStatus(), e.getMessage());
+        }
+
+        return toResponse(saved);
     }
 
-   
     private double calculateCharge(double weightKg, String serviceType) {
         double baseRate;
-
         switch (serviceType.toLowerCase()) {
             case "express":
                 baseRate = 80.0;
@@ -143,11 +166,9 @@ public class DeliveryService {
                 baseRate = 40.0;
                 break;
         }
-        
         return baseRate * Math.max(weightKg, 1.0);
     }
 
-   
     private void validateStatusTransition(
             DeliveryStatus current, DeliveryStatus next) {
 
@@ -160,7 +181,6 @@ public class DeliveryService {
                 DeliveryStatus.DELIVERED
         );
 
-       
         List<DeliveryStatus> exceptionStates = List.of(
                 DeliveryStatus.DELAYED,
                 DeliveryStatus.FAILED,
@@ -179,7 +199,6 @@ public class DeliveryService {
         }
     }
 
-   
     private DeliveryResponse toResponse(Delivery d) {
 
         AddressDto senderDTO = AddressDto.builder()

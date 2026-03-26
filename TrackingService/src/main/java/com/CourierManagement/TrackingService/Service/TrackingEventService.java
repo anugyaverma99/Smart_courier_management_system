@@ -3,6 +3,7 @@ package com.CourierManagement.TrackingService.Service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import com.CourierManagement.TrackingService.Client.DeliveryClient;
 import com.CourierManagement.TrackingService.Dto.TrackingEventRequest;
 import com.CourierManagement.TrackingService.Dto.TrackingEventResponse;
 import com.CourierManagement.TrackingService.Entity.TrackingEvent;
@@ -18,9 +19,14 @@ import java.util.stream.Collectors;
 public class TrackingEventService {
 
  private final TrackingEventRepository repository;
+ private final DeliveryClient deliveryClient;
 
  public TrackingEventResponse addEvent(TrackingEventRequest request) {
-	 
+	 boolean exists = deliveryClient.doesDeliveryExist(request.getDeliveryId());
+     if (!exists) {
+         throw new TrackingNotFoundException(
+             "Delivery not found with ID: " + request.getDeliveryId());
+     }
 	 // DTO->ENTITY
      TrackingEvent event = TrackingEvent.builder()
              .deliveryId(request.getDeliveryId())

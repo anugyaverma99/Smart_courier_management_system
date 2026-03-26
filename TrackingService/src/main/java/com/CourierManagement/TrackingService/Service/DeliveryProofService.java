@@ -4,13 +4,12 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
-
+import com.CourierManagement.TrackingService.Client.DeliveryClient;
 import com.CourierManagement.TrackingService.Dto.DeliveryProofRequest;
 import com.CourierManagement.TrackingService.Dto.DeliveryProofResponse;
 import com.CourierManagement.TrackingService.Entity.DeliveryProof;
 import com.CourierManagement.TrackingService.Exception.TrackingNotFoundException;
 import com.CourierManagement.TrackingService.Repository.DeliveryProofRepository;
-
 import java.io.IOException;
 import java.nio.file.*;
 import java.time.LocalDateTime;
@@ -20,63 +19,79 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class DeliveryProofService {
 
- private final DeliveryProofRepository repository;
+    private final DeliveryProofRepository repository;
+    private final DeliveryClient deliveryClient;  // ← injected via RequiredArgsConstructor
 
- @Value("${app.upload.dir:uploads/documents}")
- private String uploadDir;
+    @Value("${app.upload.dir:uploads/documents}")
+    private String uploadDir;
 
- 
- public DeliveryProofResponse submitProof(
-         DeliveryProofRequest request,
-         MultipartFile proofImage) throws IOException {
+    public DeliveryProofResponse submitProof(
+            DeliveryProofRequest request,
+            MultipartFile proofImage) throws IOException {
 
-     String imagePath = null;
+        // ── Feign call: verify delivery exists before submitting proof ──
+        boolean exists = deliveryClient.doesDeliveryExist(
+                request.getDeliveryId());
+        if (!exists) {
+            throw new TrackingNotFoundException(
+                "Cannot submit proof — delivery not found with ID: "
+                + request.getDeliveryId());
+        }
 
-     
-     if (proofImage != null && !proofImage.isEmpty()) {
-         Path uploadPath = Paths.get(uploadDir, "proofs");
-         Files.createDirectories(uploadPath);
-         String uniqueName = UUID.randomUUID() + "_" + proofImage.getOriginalFilename();
-         Path targetPath  = uploadPath.resolve(uniqueName);
-         Files.copy(proofImage.getInputStream(), targetPath,
-                    StandardCopyOption.REPLACE_EXISTING);
-         imagePath = targetPath.toString();
-     }
+        String imagePath = null;
 
-     DeliveryProof proof = DeliveryProof.builder()
-             .deliveryId(request.getDeliveryId())
-             .trackingNumber(request.getTrackingNumber())
-             .receivedBy(request.getReceivedBy())
-             .proofImagePath(imagePath)
-             .remarks(request.getRemarks())
-             .submittedBy(request.getSubmittedBy())
-             .deliveredAt(request.getDeliveredAt())
-             .build();
+        if (proofImage != null && !proofImage.isEmpty()) {
+            Path uploadPath = Paths.get(uploadDir, "proofs");
+            Files.createDirectories(uploadPath);
+            String uniqueName = UUID.randomUUID() + "_" + proofImage.getOriginalFilename();
+            Path targetPath   = uploadPath.resolve(uniqueName);
+            Files.copy(proofImage.getInputStream(), targetPath,
+                       StandardCopyOption.REPLACE_EXISTING);
+            imagePath = targetPath.toString();
+        }
 
-     return toResponse(repository.save(proof));
- }
+        DeliveryProof proof = DeliveryProof.builder()
+                .deliveryId(request.getDeliveryId())
+                .trackingNumber(request.getTrackingNumber())
+                .receivedBy(request.getReceivedBy())
+                .proofImagePath(imagePath)
+                .remarks(request.getRemarks())
+                .submittedBy(request.getSubmittedBy())
+                .deliveredAt(request.getDeliveredAt())
+                .build();
 
- 
- public DeliveryProofResponse getProof(String deliveryId) {
-     return repository.findByDeliveryId(deliveryId)
-             .map(this::toResponse)
-             .orElseThrow(() -> new TrackingNotFoundException(
-                     "No delivery proof found for: " + deliveryId));
- }
+        return toResponse(repository.save(proof));
+    }
 
- private DeliveryProofResponse toResponse(DeliveryProof p) {
-     return DeliveryProofResponse.builder()
-             .id(p.getId())
-             .deliveryId(p.getDeliveryId())
-             .trackingNumber(p.getTrackingNumber())
-             .receivedBy(p.getReceivedBy())
-             .proofImagePath(p.getProofImagePath())
-             .remarks(p.getRemarks())
-             .submittedBy(p.getSubmittedBy())
-             .deliveredAt( p.getDeliveredAt() != null 
-            		    ? p.getDeliveredAt() 
-            		    	    : LocalDateTime.now())
-             .createdAt(p.getCreatedAt())
-             .build();
- }
+    public DeliveryProofResponse getProof(String deliveryId) {
+
+        // ── Feign call: verify delivery exists before fetching proof ──
+        boolean exists = deliveryClient.doesDeliveryExist(
+                deliveryId);
+        if (!exists) {
+            throw new TrackingNotFoundException(
+                "Cannot fetch proof — delivery not found with ID: " + deliveryId);
+        }
+
+        return repository.findByDeliveryId(deliveryId)
+                .map(this::toResponse)
+                .orElseThrow(() -> new TrackingNotFoundException(
+                        "No delivery proof found for: " + deliveryId));
+    }
+
+    private DeliveryProofResponse toResponse(DeliveryProof p) {
+        return DeliveryProofResponse.builder()
+                .id(p.getId())
+                .deliveryId(p.getDeliveryId())
+                .trackingNumber(p.getTrackingNumber())
+                .receivedBy(p.getReceivedBy())
+                .proofImagePath(p.getProofImagePath())
+                .remarks(p.getRemarks())
+                .submittedBy(p.getSubmittedBy())
+                .deliveredAt(p.getDeliveredAt() != null
+                        ? p.getDeliveredAt()
+                        : LocalDateTime.now())
+                .createdAt(p.getCreatedAt())
+                .build();
+    }
 }

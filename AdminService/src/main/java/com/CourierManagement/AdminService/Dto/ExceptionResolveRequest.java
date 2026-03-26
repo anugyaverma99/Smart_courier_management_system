@@ -1,6 +1,7 @@
 package com.CourierManagement.AdminService.Dto;
 
 
+import jakarta.validation.constraints.NotBlank;
 import lombok.*;
 
 @Getter 
@@ -9,6 +10,9 @@ import lombok.*;
 @AllArgsConstructor 
 @Builder
 public class ExceptionResolveRequest {
- private String remarks;
+ 
+	@NotBlank(message = "Remarks are required")
+	private String remarks;
+	@NotBlank(message = "Resolved by is required")
  private String resolvedBy;
 }

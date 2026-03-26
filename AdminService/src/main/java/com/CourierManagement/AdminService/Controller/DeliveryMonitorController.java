@@ -3,6 +3,8 @@ package com.CourierManagement.AdminService.Controller;
 import com.CourierManagement.AdminService.Dto.DeliveryMonitorResponse;
 import com.CourierManagement.AdminService.Entity.DeliveryStatus;
 import com.CourierManagement.AdminService.Service.DeliveryMonitorService;
+
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -10,7 +12,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/admin/deliveries")
+@RequestMapping("/admin/deliveries")
 @RequiredArgsConstructor
 public class DeliveryMonitorController {
 
@@ -53,7 +55,7 @@ public class DeliveryMonitorController {
  @PreAuthorize("hasRole('ADMIN')")
  public ResponseEntity<DeliveryMonitorResponse> updateStatus(
          @PathVariable String deliveryId,
-         @RequestParam DeliveryStatus status) {
+         @Valid @RequestParam DeliveryStatus status) {
      return ResponseEntity.ok(service.updateStatus(deliveryId, status));
  }
 }

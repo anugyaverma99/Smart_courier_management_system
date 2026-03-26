@@ -21,4 +21,8 @@ public class DeliveryMonitorResponse {
  private DeliveryStatus currentStatus;
  private String assignedHub;
  private LocalDateTime lastUpdated;
+ private String liveSenderName;
+ private String liveReceiverName;
+ private String latestTrackingStatus;
+ private String latestTrackingLocation;
 }

@@ -22,4 +22,6 @@ public class ReportResponse {
  private int returnedCount;
  private String generatedBy;
  private LocalDateTime generatedAt;
+ private int liveDeliveryCount;
+ private int totalTrackingEvents;
 }

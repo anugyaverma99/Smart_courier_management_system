@@ -11,6 +11,8 @@ import com.CourierManagement.AuthService.Dto.LoginRequest;
 import com.CourierManagement.AuthService.Dto.SignupRequest;
 import com.CourierManagement.AuthService.Service.AuthService;
 
+import jakarta.validation.Valid;
+
 @RestController
 @RequestMapping("/auth")
 @RequiredArgsConstructor
@@ -20,7 +22,7 @@ public class AuthController {
 
     @PostMapping("/signup")
     public ResponseEntity<AuthResponse> signup(
-            @RequestBody SignupRequest request) {
+            @Valid @RequestBody SignupRequest request) {
         return ResponseEntity
                 .status(HttpStatus.CREATED)
                 .body(authService.signup(request));
@@ -29,7 +31,7 @@ public class AuthController {
     
     @PostMapping("/login")
     public ResponseEntity<AuthResponse> login(
-            @RequestBody LoginRequest request) {
+            @Valid @RequestBody LoginRequest request) {
         return ResponseEntity.ok(authService.login(request));
     }
 }
