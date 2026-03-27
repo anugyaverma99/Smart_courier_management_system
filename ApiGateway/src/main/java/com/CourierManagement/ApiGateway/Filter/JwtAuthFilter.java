@@ -22,7 +22,11 @@ public class JwtAuthFilter implements GlobalFilter, Ordered {
     // Public routes — no token needed
     private static final List<String> PUBLIC_ROUTES = List.of(
             "/gateway/auth/login",
-            "/gateway/auth/signup"
+            "/gateway/auth/signup",
+            "/swagger-ui.html",
+            "/swagger-ui/**",
+            "/v3/api-docs/**",
+            "/webjars/**"
     );
 
     @Override
@@ -76,8 +80,13 @@ public class JwtAuthFilter implements GlobalFilter, Ordered {
     }
 
     private boolean isPublicRoute(String path) {
-        return PUBLIC_ROUTES.stream()
-                .anyMatch(route -> path.equals(route) || path.startsWith(route));
+    	return path.startsWith("/gateway/auth/login") ||
+    	           path.startsWith("/gateway/auth/signup") ||
+    	           path.startsWith("/swagger-ui") ||
+    	           path.startsWith("/v3/api-docs") ||
+    	           path.startsWith("/webjars") ||
+    	           path.equals("/swagger-ui.html") ||
+    	           path.equals("/favicon.ico");
     }
 
     private Mono<Void> rejectRequest(ServerWebExchange exchange) {

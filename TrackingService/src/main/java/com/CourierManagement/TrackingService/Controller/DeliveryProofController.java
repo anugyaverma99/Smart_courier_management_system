@@ -12,17 +12,22 @@ import com.CourierManagement.TrackingService.Dto.DeliveryProofRequest;
 import com.CourierManagement.TrackingService.Dto.DeliveryProofResponse;
 import com.CourierManagement.TrackingService.Service.DeliveryProofService;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+
 import java.io.IOException;
 
 @RestController
 @RequestMapping("/tracking")
 @RequiredArgsConstructor
+@Tag(name = "Delivery Proof", description = "Delivery proof APIs")
 public class DeliveryProofController {
 
  private final DeliveryProofService service;
 
 
  @PostMapping(value = "/proof", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+ @Operation(summary = "Submit proof", description = "Rider submits delivery proof at point of delivery")
  public ResponseEntity<DeliveryProofResponse> submitProof(
          @RequestParam("deliveryId")     String deliveryId,
          @RequestParam("trackingNumber") String trackingNumber,
@@ -46,6 +51,8 @@ public class DeliveryProofController {
  }
 
   @GetMapping("/{deliveryId}/proof")
+  @Operation(summary = "Get proof", description = "Get delivery proof — shown on confirmation page")
+  
  public ResponseEntity<DeliveryProofResponse> getProof(
          @PathVariable String deliveryId) {
      return ResponseEntity.ok(service.getProof(deliveryId));

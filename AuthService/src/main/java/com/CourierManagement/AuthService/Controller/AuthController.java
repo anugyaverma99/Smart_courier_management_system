@@ -11,16 +11,21 @@ import com.CourierManagement.AuthService.Dto.LoginRequest;
 import com.CourierManagement.AuthService.Dto.SignupRequest;
 import com.CourierManagement.AuthService.Service.AuthService;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/auth")
 @RequiredArgsConstructor
+@Tag(name = "Auth", description = "Authentication APIs — signup and login")
 public class AuthController {
 
     private final AuthService authService;
 
     @PostMapping("/signup")
+    @Operation(summary = "Register new user", description = "Creates a new CUSTOMER or ADMIN account")
+    
     public ResponseEntity<AuthResponse> signup(
             @Valid @RequestBody SignupRequest request) {
         return ResponseEntity
@@ -30,6 +35,7 @@ public class AuthController {
 
     
     @PostMapping("/login")
+    @Operation(summary = "Login", description = "Authenticate and get JWT token")
     public ResponseEntity<AuthResponse> login(
             @Valid @RequestBody LoginRequest request) {
         return ResponseEntity.ok(authService.login(request));

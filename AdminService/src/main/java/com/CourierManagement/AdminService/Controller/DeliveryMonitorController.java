@@ -49,8 +49,6 @@ public class DeliveryMonitorController {
      return ResponseEntity.ok(service.getByHub(hubName));
  }
 
- // PUT /api/admin/deliveries/{deliveryId}/status
- // Called internally when Delivery Service pushes a status update
  @PutMapping("/{deliveryId}/status")
  @PreAuthorize("hasRole('ADMIN')")
  public ResponseEntity<DeliveryMonitorResponse> updateStatus(

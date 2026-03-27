@@ -1,4 +1,4 @@
-package com.CourierManagement.AdminService.Security;
+package com.CourierManagement.DeliveryService.Config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

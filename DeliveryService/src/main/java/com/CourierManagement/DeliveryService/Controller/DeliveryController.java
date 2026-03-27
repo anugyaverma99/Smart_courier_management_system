@@ -3,6 +3,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import com.CourierManagement.DeliveryService.Service.DeliveryService;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 
 import java.util.List;
@@ -17,6 +19,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 @RestController
 @RequestMapping("/deliveries")
 @RequiredArgsConstructor
+@Tag(name = "Delivery", description = "Delivery management APIs")
 public class DeliveryController {
 
  private final DeliveryService service;
@@ -24,6 +27,7 @@ public class DeliveryController {
  
  @PostMapping
  @PreAuthorize("hasRole('CUSTOMER')")
+ @Operation(summary = "Create delivery", description = "Customer creates a new delivery request")
  public ResponseEntity<DeliveryResponse> createDelivery(
          @Valid @RequestBody CreateDeliveryRequest request) {
      return ResponseEntity
@@ -34,13 +38,16 @@ public class DeliveryController {
 
  @GetMapping("/my")
  @PreAuthorize("hasRole('CUSTOMER')")
- public ResponseEntity<List<DeliveryResponse>> getMyDeliveries(
+ @Operation(summary = "Get my deliveries", description = "Get all deliveries for a customer")
+  public ResponseEntity<List<DeliveryResponse>> getMyDeliveries(
           @RequestParam String customerId) {
      return ResponseEntity.ok(service.getMyDeliveries(customerId));
  }
 
  @GetMapping("/{id}")
  @PreAuthorize("hasRole('CUSTOMER') or hasRole('ADMIN')")
+ @Operation(summary = "Get delivery by ID", description = "Get delivery details")
+ 
  public ResponseEntity<DeliveryResponse> getById(
          @PathVariable Long id) {
      return ResponseEntity.ok(service.getById(id));
@@ -49,6 +56,7 @@ public class DeliveryController {
 
  @GetMapping("/track/{trackingNumber}")
  @PreAuthorize("hasRole('CUSTOMER') or hasRole('ADMIN')")
+ @Operation(summary = "Track delivery", description = "Get delivery by tracking number")
  public ResponseEntity<DeliveryResponse> getByTrackingNumber(
          @PathVariable String trackingNumber) {
      return ResponseEntity.ok(service.getByTrackingNumber(trackingNumber));
@@ -56,6 +64,8 @@ public class DeliveryController {
 
  @PutMapping("/{id}/status")
  @PreAuthorize("hasRole('ADMIN')")
+ @Operation(summary = "Update status", description = "Admin updates delivery lifecycle status")
+ 
  public ResponseEntity<DeliveryResponse> updateStatus(
          @PathVariable Long id,
          @Valid @RequestBody UpdateStatusRequest request) {
