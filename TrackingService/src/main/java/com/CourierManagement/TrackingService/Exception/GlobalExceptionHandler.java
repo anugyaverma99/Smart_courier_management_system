@@ -39,6 +39,7 @@ public class GlobalExceptionHandler {
  }
  @ExceptionHandler(Exception.class)
  public ResponseEntity<Map<String, Object>> handleGeneral(Exception ex) {
+	 ex.printStackTrace();	 
      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of(
              "timestamp", LocalDateTime.now(),
              "status", 500,

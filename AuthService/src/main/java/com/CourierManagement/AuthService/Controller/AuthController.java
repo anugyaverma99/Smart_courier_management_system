@@ -28,6 +28,7 @@ public class AuthController {
     
     public ResponseEntity<AuthResponse> signup(
             @Valid @RequestBody SignupRequest request) {
+    	System.out.println("SIGNUP API HIT");
         return ResponseEntity
                 .status(HttpStatus.CREATED)
                 .body(authService.signup(request));

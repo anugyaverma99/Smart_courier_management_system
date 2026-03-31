@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 import com.CourierManagement.AdminService.Client.DeliveryClient;
 import com.CourierManagement.AdminService.Client.TrackingClient;
 import com.CourierManagement.AdminService.Dto.DeliveryDto;
+import com.CourierManagement.AdminService.Dto.DeliveryMonitorRequest;
 import com.CourierManagement.AdminService.Dto.DeliveryMonitorResponse;
 import com.CourierManagement.AdminService.Dto.TrackingDto;
 import com.CourierManagement.AdminService.Entity.DeliveryMonitor;
@@ -95,7 +96,21 @@ public DeliveryMonitorResponse getByDeliveryId(String deliveryId) {
      monitor.setCurrentStatus(newStatus);
      return toResponse(repository.save(monitor));
  }
+ public DeliveryMonitorResponse syncDelivery(DeliveryMonitorRequest request) {
+	    DeliveryMonitor monitor = repository
+	            .findByDeliveryId(request.getDeliveryId())
+	            .orElse(new DeliveryMonitor());
 
+	    monitor.setDeliveryId(request.getDeliveryId());
+	    monitor.setTrackingNumber(request.getTrackingNumber());
+	    monitor.setCustomerName(request.getCustomerName());
+	    monitor.setSenderCity(request.getSenderCity());
+	    monitor.setRecieverCity(request.getReceiverCity());
+	    monitor.setCurrentStatus(request.getCurrentStatus());
+	    monitor.setAssignedHub(request.getAssignedHub());
+
+	    return toResponse(repository.save(monitor));
+	}
  private DeliveryMonitorResponse toResponse(DeliveryMonitor d) {
      return DeliveryMonitorResponse.builder()
              .id(d.getId())

@@ -1,11 +1,14 @@
 package com.CourierManagement.AdminService.Controller;
 
+import com.CourierManagement.AdminService.Dto.DeliveryMonitorRequest;
 import com.CourierManagement.AdminService.Dto.DeliveryMonitorResponse;
 import com.CourierManagement.AdminService.Entity.DeliveryStatus;
 import com.CourierManagement.AdminService.Service.DeliveryMonitorService;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -18,6 +21,13 @@ public class DeliveryMonitorController {
 
  private final DeliveryMonitorService service;
 
+@PostMapping("/sync")
+public ResponseEntity<DeliveryMonitorResponse> syncDelivery(
+      @RequestBody DeliveryMonitorRequest request) {
+  return ResponseEntity
+          .status(HttpStatus.CREATED)
+          .body(service.syncDelivery(request));
+}
  
  @GetMapping
  @PreAuthorize("hasRole('ADMIN')")
@@ -53,7 +63,7 @@ public class DeliveryMonitorController {
  @PreAuthorize("hasRole('ADMIN')")
  public ResponseEntity<DeliveryMonitorResponse> updateStatus(
          @PathVariable String deliveryId,
-         @Valid @RequestParam DeliveryStatus status) {
-     return ResponseEntity.ok(service.updateStatus(deliveryId, status));
+         @Valid @RequestParam String status) {  DeliveryStatus newStatus = DeliveryStatus.valueOf(status); // convert string to enum
+         return ResponseEntity.ok(service.updateStatus(deliveryId, newStatus));
  }
 }

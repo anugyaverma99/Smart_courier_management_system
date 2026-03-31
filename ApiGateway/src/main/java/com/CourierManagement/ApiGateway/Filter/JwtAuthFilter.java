@@ -1,4 +1,3 @@
-// filter/JwtAuthFilter.java
 package com.CourierManagement.ApiGateway.Filter;
 
 import com.CourierManagement.ApiGateway.Util.JwtUtil;
@@ -11,82 +10,63 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
-import java.util.List;
 
 @Component
 @RequiredArgsConstructor
 public class JwtAuthFilter implements GlobalFilter, Ordered {
 
     private final JwtUtil jwtUtil;
-
-    // Public routes — no token needed
-    private static final List<String> PUBLIC_ROUTES = List.of(
-            "/gateway/auth/login",
-            "/gateway/auth/signup",
-            "/swagger-ui.html",
-            "/swagger-ui/**",
-            "/v3/api-docs/**",
-            "/webjars/**"
-    );
+    
 
     @Override
     public Mono<Void> filter(
             ServerWebExchange exchange, GatewayFilterChain chain) {
 
         String path = exchange.getRequest().getURI().getPath();
+        System.out.println("Gateway path: " + path);
 
-        // Print path for debugging — remove later
-        System.out.println("Incoming request path: " + path);
-
-        // Skip JWT check for public routes
+        // Skip JWT for public routes
         if (isPublicRoute(path)) {
-            System.out.println("Public route — skipping JWT check");
+            System.out.println("Public route — skipping JWT");
             return chain.filter(exchange);
         }
 
-        // Check Authorization header exists
+        // Check Authorization header
         String authHeader = exchange.getRequest()
                 .getHeaders().getFirst(HttpHeaders.AUTHORIZATION);
 
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-            System.out.println("Missing token for path: " + path);
+            System.out.println("Missing token");
             return rejectRequest(exchange);
         }
 
-        // Extract and validate token
         String token = authHeader.substring(7);
 
+        // Validate token
         if (!jwtUtil.validateToken(token)) {
-            System.out.println("Invalid token for path: " + path);
+            System.out.println("Invalid token");
             return rejectRequest(exchange);
         }
 
-        // Extract role — block non-admin from admin routes
         String role = jwtUtil.extractRole(token);
+        System.out.println("Authenticated role: " + role);
+
+        // Block non-admin from admin routes
         if (path.startsWith("/gateway/admin") && !"ADMIN".equals(role)) {
             System.out.println("Admin route blocked for role: " + role);
             return rejectRequest(exchange);
         }
 
-        // Pass user info to downstream service via headers
-        ServerWebExchange modifiedExchange = exchange.mutate()
-                .request(exchange.getRequest().mutate()
-                        .header("X-User-Email", jwtUtil.extractEmail(token))
-                        .header("X-User-Role", role)
-                        .build())
-                .build();
-
-        return chain.filter(modifiedExchange);
+        // Just forward — no header mutation
+        return chain.filter(exchange);
     }
 
     private boolean isPublicRoute(String path) {
-    	return path.startsWith("/gateway/auth/login") ||
-    	           path.startsWith("/gateway/auth/signup") ||
-    	           path.startsWith("/swagger-ui") ||
-    	           path.startsWith("/v3/api-docs") ||
-    	           path.startsWith("/webjars") ||
-    	           path.equals("/swagger-ui.html") ||
-    	           path.equals("/favicon.ico");
+        return path.contains("/auth/login") ||
+               path.contains("/auth/signup") ||
+               path.contains("/swagger") ||
+               path.contains("/api-docs") ||
+               path.contains("/webjars");
     }
 
     private Mono<Void> rejectRequest(ServerWebExchange exchange) {

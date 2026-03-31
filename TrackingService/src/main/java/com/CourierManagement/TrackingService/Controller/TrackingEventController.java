@@ -40,6 +40,11 @@ public class TrackingEventController {
          @PathVariable String trackingNumber) {
      return ResponseEntity.ok(service.getTimeline(trackingNumber));
  }
+ @GetMapping("/count")
+ @Operation(summary = "Get total event count")
+ public ResponseEntity<Long> getTotalEventCount() {
+     return ResponseEntity.ok(service.getTotalEventCount());
+ }
 
 
  @GetMapping("/{trackingNumber}/latest")

@@ -12,7 +12,7 @@ import org.springframework.web.cors.reactive.CorsWebFilter;
 import org.springframework.web.cors.reactive.UrlBasedCorsConfigurationSource;
 
 @Configuration
-@EnableWebFluxSecurity
+@EnableWebFluxSecurity // for reactive appilcation,enable web security
 public class SecurityConfig {
 
     @Bean

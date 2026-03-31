@@ -26,7 +26,7 @@ public class ReportController {
  @PreAuthorize("hasRole('ADMIN')")
  @Operation(summary = "Generate report", description = "Generate DAILY/WEEKLY/MONTHLY report")
  public ResponseEntity<ReportResponse> generateReport(
-         @RequestParam String reportType,
+         @RequestParam String reportType,// dilay,weekly ,monthly
          @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fromDate,
          @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate toDate,
          @RequestParam String generatedBy) {

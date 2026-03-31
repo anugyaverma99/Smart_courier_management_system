@@ -1,5 +1,6 @@
 package com.CourierManagement.AdminService.Controller;
 
+import com.CourierManagement.AdminService.Dto.ExceptionRequest;
 import com.CourierManagement.AdminService.Dto.ExceptionResolveRequest;
 import com.CourierManagement.AdminService.Dto.ExceptionResponse;
 import com.CourierManagement.AdminService.Service.ExceptionHandlingService;
@@ -7,6 +8,8 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -41,6 +44,18 @@ public class ExceptionHandlingController {
             @PathVariable String deliveryId) {
         return ResponseEntity.ok(service.getByDeliveryId(deliveryId));
     }
+    
+ // POST /admin/exceptions — raise a new exception
+    @PostMapping
+    @PreAuthorize("hasRole('ADMIN')")
+    @Operation(summary = "Raise exception", description = "Admin raises a delivery exception")
+    public ResponseEntity<ExceptionResponse> raiseException(
+            @RequestBody ExceptionRequest request) {
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .body(service.raiseException(request));
+    }
+    
 
     @PutMapping("/{exceptionId}/resolve")
     @PreAuthorize("hasRole('ADMIN')")

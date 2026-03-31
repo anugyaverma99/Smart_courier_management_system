@@ -11,7 +11,7 @@ import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 
-@RestControllerAdvice
+@RestControllerAdvice  //apply to all controllers
 public class GlobalExceptionHandler {
 
  @ExceptionHandler(AdminServiceException.class)
@@ -43,6 +43,7 @@ public class GlobalExceptionHandler {
 
  @ExceptionHandler(Exception.class)
  public ResponseEntity<Map<String, Object>> handleGeneral(Exception ex) {
+	 ex.printStackTrace();
      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of(
              "timestamp", LocalDateTime.now(),
              "status", 500,

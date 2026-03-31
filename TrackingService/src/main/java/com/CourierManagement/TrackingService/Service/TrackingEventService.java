@@ -40,7 +40,9 @@ public class TrackingEventService {
 
      return toResponse(repository.save(event));
  }
-
+ public long getTotalEventCount() {
+	    return repository.count();
+	}
  
  public List<TrackingEventResponse> getTimeline(String trackingNumber) {
      List<TrackingEvent> events =

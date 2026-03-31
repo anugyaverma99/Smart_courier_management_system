@@ -15,7 +15,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 
-
 @RestController
 @RequestMapping("/deliveries")
 @RequiredArgsConstructor
@@ -24,7 +23,6 @@ public class DeliveryController {
 
  private final DeliveryService service;
 
- 
  @PostMapping
  @PreAuthorize("hasRole('CUSTOMER')")
  @Operation(summary = "Create delivery", description = "Customer creates a new delivery request")
@@ -34,13 +32,12 @@ public class DeliveryController {
              .status(HttpStatus.CREATED)
              .body(service.createDelivery(request));
  }
-
-
- @GetMapping("/my")
+  @GetMapping("/my")
  @PreAuthorize("hasRole('CUSTOMER')")
  @Operation(summary = "Get my deliveries", description = "Get all deliveries for a customer")
   public ResponseEntity<List<DeliveryResponse>> getMyDeliveries(
           @RequestParam String customerId) {
+	  System.out.println("Customer ID received: " + customerId);
      return ResponseEntity.ok(service.getMyDeliveries(customerId));
  }
 
@@ -65,10 +62,27 @@ public class DeliveryController {
  @PutMapping("/{id}/status")
  @PreAuthorize("hasRole('ADMIN')")
  @Operation(summary = "Update status", description = "Admin updates delivery lifecycle status")
- 
  public ResponseEntity<DeliveryResponse> updateStatus(
          @PathVariable Long id,
          @Valid @RequestBody UpdateStatusRequest request) {
      return ResponseEntity.ok(service.updateStatus(id, request));
  }
+
+@GetMapping("/{id}/exists")
+public ResponseEntity<Boolean> doesDeliveryExist(
+      @PathVariable String id) {
+  try {
+      service.getById(Long.parseLong(id));
+      return ResponseEntity.ok(true);
+  } catch (Exception e) {
+      return ResponseEntity.ok(false);
+  }
+}
+
+@GetMapping
+@PreAuthorize("hasRole('ADMIN')")
+@Operation(summary = "Get all deliveries", description = "Admin gets all deliveries")
+public ResponseEntity<List<DeliveryResponse>> getAllDeliveries() {
+ return ResponseEntity.ok(service.getAllDeliveries());
+}
 }

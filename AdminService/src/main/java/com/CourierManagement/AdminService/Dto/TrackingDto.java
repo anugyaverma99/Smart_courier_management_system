@@ -2,7 +2,8 @@ package com.CourierManagement.AdminService.Dto;
 
 
 import lombok.Data;
-
+import lombok.Builder;
+@Builder
 @Data
 public class TrackingDto {
     private Long id;
