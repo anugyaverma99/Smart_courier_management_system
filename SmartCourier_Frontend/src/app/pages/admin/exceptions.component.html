@@ -1,0 +1,18 @@
+<!-- exceptions management page -->
+<section class="page">
+  <div class="page-head"><div><h1>Exceptions</h1><p>Resolve failed, delayed, or returned deliveries and see the row update immediately.</p></div></div>
+  @if (data.error()) { <div class="notice error">{{ data.error() }}</div> }
+  @if (data.success()) { <div class="notice success">{{ data.success() }}</div> }
+  <!-- search and filter toolbar -->
+  <div class="toolbar"><input placeholder="Search tracking or reason" [(ngModel)]="search"><select [(ngModel)]="mode"><option value="OPEN">Open</option><option value="ALL">All</option><option value="RESOLVED">Resolved</option></select></div>
+  <!-- exceptions table -->
+  <div class="table-wrap"><table>
+    <thead><tr><th>Tracking</th><th>Status</th><th>Reason</th><th>Resolution</th><th>Remarks</th><th></th></tr></thead>
+    <tbody>
+      @for (e of pageItems(); track e.id) {
+        <tr><td>{{ e.trackingNumber }}</td><td><span class="badge bad">{{ e.exceptionStatus }}</span></td><td>{{ e.reason }}</td><td>{{ e.resolutionStatus }}</td><td><input #remarks [value]="e.remarks || ''" placeholder="Resolution remarks"></td><td><button class="btn" (click)="data.resolveException(e, remarks.value)" [disabled]="e.resolutionStatus === 'RESOLVED'">Resolve</button></td></tr>
+      } @empty { <tr><td colspan="6" class="empty">{{ data.loading() ? 'Loading exceptions...' : 'No exceptions in this view.' }}</td></tr> }
+    </tbody>
+  </table></div>
+  <app-pagination [total]="filtered().length" [page]="page()" (pageChange)="page.set($event)" />
+</section>

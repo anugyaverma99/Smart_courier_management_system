@@ -1,0 +1,49 @@
+<!-- sidebar layout -->
+<div class="app-shell">
+<aside class="sidebar">
+
+    <!-- brand logo -->
+    <div class="sidebar-brand">
+    <span class="logo-mark small">📦</span>
+    <span><strong>Fast</strong>Drop</span>
+  </div>
+
+  <!-- navigation links grouped by category -->
+  @for (group of groupedLinks(); track group.label) {
+
+    <div class="nav-group">
+      <span class="nav-section">{{ group.label }}</span>
+
+      @for (link of group.links; track link.href) {
+        <a
+          [routerLink]="link.href"
+          routerLinkActive="active"
+        >
+          <span>{{ link.label }}</span>
+        </a>
+      }
+
+    </div>
+
+  }
+
+  <!-- user profile and logout -->
+  <div class="sidebar-user">
+
+    <div class="avatar">
+      {{ initials() }}
+    </div>
+
+    <div>
+      <strong>{{ auth.user()?.fullName }}</strong>
+      <small>{{ auth.user()?.email }}</small>
+    </div>
+
+    <button (click)="auth.logout()">
+      Logout
+    </button>
+
+  </div>
+
+</aside>
+</div>

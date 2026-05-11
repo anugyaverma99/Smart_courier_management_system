@@ -1,0 +1,19 @@
+<!-- admin dashboard page -->
+<section class="page">
+  <div class="page-head"><div><span class="eyebrow">Control center</span><h1>Admin Dashboard</h1><p>Live operational overview of your courier network.</p></div></div>
+  @if (data.error()) { <div class="notice error">{{ data.error() }}</div> }
+  <!-- primary stats row -->
+  <div class="grid stats">
+    <div class="card stat-card teal"><span class="stat-icon">BOX</span><div class="stat-value">{{ total() }}</div><div class="stat-label">Total Deliveries</div></div>
+    <div class="card stat-card green"><span class="stat-icon">OK</span><div class="stat-value">{{ deliveredToday() }}</div><div class="stat-label">Delivered Today</div></div>
+    <div class="card stat-card orange"><span class="stat-icon">RUN</span><div class="stat-value">{{ inTransit() }}</div><div class="stat-label">In Transit</div></div>
+    <div class="card stat-card red"><span class="stat-icon">ERR</span><div class="stat-value">{{ exceptions() }}</div><div class="stat-label">Exceptions</div></div>
+  </div>
+  <!-- secondary stats row -->
+  <div class="grid stats" style="margin-top:16px">
+    <div class="card stat-card teal"><span class="stat-icon">HUB</span><div class="stat-value">{{ activeHubs() }}</div><div class="stat-label">Active Hubs</div></div>
+    <div class="card stat-card blue"><span class="stat-icon">USR</span><div class="stat-value">{{ userCount() }}</div><div class="stat-label">Users</div></div>
+    <div class="card stat-card purple"><span class="stat-icon">GPS</span><div class="stat-value">{{ trackingEvents() }}</div><div class="stat-label">Tracking Events</div></div>
+    <div class="card stat-card orange"><span class="stat-icon">MON</span><div class="stat-value">{{ liveDeliveryCount() }}</div><div class="stat-label">Live Monitor Rows</div></div>
+  </div>
+</section>

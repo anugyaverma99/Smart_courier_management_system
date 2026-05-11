@@ -1,0 +1,28 @@
+<!-- top navigation bar -->
+<header class="topbar">
+  <a class="brand" routerLink="/" aria-label="FastDrop home">
+  <span class="logo-mark">📦</span>
+  <span><strong>Fast</strong>Drop</span>
+</a>
+  
+  <!-- navigation links based on user role -->
+  <nav class="nav">
+    <a routerLink="/track" routerLinkActive="active">Track</a>
+    @if (auth.isCustomer()) { <a routerLink="/customer" routerLinkActive="active">Customer</a> }
+    @if (auth.isAdmin()) { <a routerLink="/admin" routerLinkActive="active">Admin</a> }
+    @if (!auth.isLoggedIn()) {
+      <a routerLink="/login" routerLinkActive="active">Login</a>
+      <a class="nav-cta" routerLink="/register" routerLinkActive="active">Sign Up</a>
+    } @else {
+      <!-- show user name and logout when logged in -->
+      <span class="identity">{{ identity() }}</span>
+      <button class="link-btn" (click)="auth.logout()">Logout</button>
+    }
+  </nav>
+</header>
+<!-- main content area where routed pages render -->
+<div class="app-layout">
+  <main class="app-content">
+    <router-outlet></router-outlet>
+  </main>
+</div>

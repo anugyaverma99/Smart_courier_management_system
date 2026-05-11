@@ -1,0 +1,126 @@
+<!-- delivery monitor page -->
+<section class="page">
+
+  <div class="page-head">
+    <div>
+      <span class="eyebrow">Operations</span>
+      <h1>Delivery Monitor</h1>
+      <p>Assign hubs, update statuses, add tracking events and raise exceptions.</p>
+    </div>
+    <button class="btn secondary" (click)="data.autoAssignUnassignedHubs()">Auto Assign Hubs</button>
+  </div>
+
+  @if (data.error()) { <div class="notice error">{{ data.error() }}</div> }
+  @if (data.success()) { <div class="notice success">{{ data.success() }}</div> }
+
+  <!-- search and filter toolbar -->
+  <div class="toolbar surface">
+    <input placeholder="Search tracking, customer, city, hub" [(ngModel)]="search">
+    <select [(ngModel)]="status">
+      <option value="">All statuses</option>
+      @for (s of statuses; track s) { <option [value]="s">{{ s }}</option> }
+    </select>
+    <select [(ngModel)]="hub">
+      <option value="">All hubs</option>
+      @for (h of data.hubs(); track h.id) { <option [value]="h.name">{{ h.name }}</option> }
+    </select>
+  </div>
+
+  <!-- monitor table -->
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Tracking</th>
+          <th>Customer</th>
+          <th>Route</th>
+          <th>Hub</th>
+          <th>Status</th>
+          <th>Update Status</th>
+          <th>Events & Exception</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (m of pageItems(); track m.deliveryId) {
+
+          <tr>
+            <td><strong>{{ m.trackingNumber }}</strong></td>
+            <td>{{ m.customerName || '—' }}</td>
+            <td>{{ m.senderCity || 'Origin' }} → {{ m.receiverCity || 'Destination' }}</td>
+
+            <td>
+              <div class="inline-actions">
+                <select #hubSelect>
+                  <option [value]="m.assignedHub || 'Unassigned'">{{ m.assignedHub || 'Unassigned' }}</option>
+                  @for (h of data.hubs(); track h.id) {
+                    @if (h.active && h.name !== m.assignedHub) {
+                      <option [value]="h.name">{{ h.name }} · {{ h.city }}</option>
+                    }
+                  }
+                </select>
+                <button class="btn small ghost" (click)="data.assignHub(m, hubSelect.value)">Save</button>
+              </div>
+            </td>
+
+            <td>
+              <span class="status-badge status-{{ m.currentStatus }}">{{ m.currentStatus }}</span>
+            </td>
+
+            <td>
+              <div class="inline-actions">
+                <select #statusSelect>
+                  <option [value]="m.currentStatus">{{ m.currentStatus }}</option>
+                  @for (st of getAllowedStatuses(m.currentStatus); track st) {
+                    <option [value]="st">{{ st }}</option>
+                  }
+                </select>
+                <button class="btn small secondary" (click)="update(m, statusSelect.value)">Update</button>
+              </div>
+            </td>
+
+            <td>
+              <div class="inline-actions">
+                <button class="btn small ghost" (click)="toggleRow(m.deliveryId)">
+                  {{ expandedRow() === m.deliveryId ? '✕ Close' : '+ Event' }}
+                </button>
+                
+              </div>
+            </td>
+          </tr>
+
+          <!-- expanded row: add tracking event form -->
+          @if (expandedRow() === m.deliveryId) {
+            <tr>
+              <td colspan="7">
+                <div class="event-form">
+                  <select #evtStatus>
+                    @for (st of statuses; track st) {
+                      <option [value]="st" [selected]="st === m.currentStatus">{{ st }}</option>
+                    }
+                  </select>
+                  <input #evtLoc placeholder="Location" [value]="m.assignedHub || m.senderCity || ''">
+                  <input #evtDesc placeholder="Description e.g. Arrived at hub">
+                  <button class="btn small ghost" (click)="addEvent(m, evtStatus.value, evtLoc.value, evtDesc.value); toggleRow(m.deliveryId)">Add</button>
+                  <button class="btn small secondary" (click)="toggleRow(m.deliveryId)">Cancel</button>
+                </div>
+              </td>
+            </tr>
+          }
+
+        } @empty {
+          <tr>
+            <td colspan="7" class="empty">
+              <span class="empty-icon">OPS</span>
+              <strong>No monitor rows</strong>
+              <p>Created deliveries sync into this workspace.</p>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+
+  <!-- pagination -->
+  <app-pagination [total]="filtered().length" [page]="page()" (pageChange)="page.set($event)" />
+
+</section>

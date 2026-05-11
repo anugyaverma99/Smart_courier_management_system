@@ -1,0 +1,66 @@
+<!-- register page wrapper -->
+<main class="auth-wrap">
+  <form class="card auth-card" (ngSubmit)="submit()" #f="ngForm">
+
+    <h1>Register</h1>
+    <p>Customer accounts can book and track deliveries.</p>
+
+    <!-- show error message -->
+    @if (error()) {
+      <div class="notice error">
+        {{ error() }}
+      </div>
+    }
+
+    <!-- full name input -->
+    <div class="field">
+      <label>Full name</label>
+      <input name="fullName" [(ngModel)]="fullName" required #nameRef="ngModel" />
+
+      @if (nameRef.invalid && (nameRef.touched || f.submitted)) {
+        <small class="error-text">Full name is required</small>
+      }
+    </div>
+
+    <!-- email input -->
+    <div class="field">
+      <label>Email</label>
+      <input name="email" type="email" [(ngModel)]="email" required email #emailRef="ngModel" />
+
+      @if (emailRef.invalid && (emailRef.touched || f.submitted)) {
+        <small class="error-text">Enter a valid email</small>
+      }
+    </div>
+
+    <!-- phone input (10 digits) -->
+    <div class="field">
+      <label>Phone</label>
+      <input name="phone" [(ngModel)]="phone" required pattern="[0-9]{10}" #phoneRef="ngModel" />
+
+      @if (phoneRef.invalid && (phoneRef.touched || f.submitted)) {
+        <small class="error-text">Enter 10 digit phone number</small>
+      }
+    </div>
+
+    <!-- password input -->
+    <div class="field">
+      <label>Password</label>
+      <input name="password" type="password" [(ngModel)]="password" required minlength="6" #passRef="ngModel" />
+
+      @if (passRef.invalid && (passRef.touched || f.submitted)) {
+        <small class="error-text">Password must be at least 6 characters</small>
+      }
+    </div>
+
+    <!-- submit button -->
+    <button class="btn" type="submit" [disabled]="loading() || f.invalid">
+      {{ loading() ? 'Creating...' : 'Create account' }}
+    </button>
+
+    <!-- link to login page -->
+    <p>
+      Already registered? <a routerLink="/login">Login</a>
+    </p>
+
+  </form>
+</main>

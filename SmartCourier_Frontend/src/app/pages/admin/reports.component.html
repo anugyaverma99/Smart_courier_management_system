@@ -1,0 +1,31 @@
+<!-- reports page -->
+<section class="page">
+  <div class="page-head"><div><span class="eyebrow">Analytics</span><h1>Reports</h1><p>Generate backend reports and inspect the latest delivery mix visually.</p></div></div>
+  @if (data.error()) { <div class="notice error">{{ data.error() }}</div> }
+  @if (data.success()) { <div class="notice success">{{ data.success() }}</div> }
+  <!-- report generation form -->
+  <form class="card" (ngSubmit)="generate()">
+    <div class="form-grid">
+      <div class="field"><label>Type</label><select name="type" [(ngModel)]="type" (ngModelChange)="load()"><option>DAILY</option><option>WEEKLY</option><option>MONTHLY</option></select></div>
+      <div class="field"><label>From</label><input name="from" type="date" [(ngModel)]="fromDate" required></div>
+      <div class="field"><label>To</label><input name="to" type="date" [(ngModel)]="toDate" required></div>
+    </div>
+    <button class="btn" type="submit">Generate Report</button>
+  </form>
+
+  <!-- chart visualization -->
+  <div class="card chart-card">
+    <h2>Latest Report Breakdown</h2>
+    @if (latest()) { <canvas #chartCanvas height="110"></canvas> }
+    @else { <div class="empty"><span class="empty-icon">BAR</span><strong>No report selected</strong><p>Generate or load reports to see a chart.</p></div> }
+  </div>
+  <!-- reports history table -->
+  <div class="table-wrap"><table>
+    <thead><tr><th>Type</th><th>Range</th><th>Total</th><th>Delivered</th><th>Failed</th><th>Delayed</th><th>Returned</th><th>Generated</th></tr></thead>
+    <tbody>
+      @for (r of pageItems(); track r.id) { <tr><td>{{ r.reportType }}</td><td>{{ r.fromDate }} to {{ r.toDate }}</td><td>{{ r.totalDeliveries }}</td><td>{{ r.deliveredCount }}</td><td>{{ r.failedCount }}</td><td>{{ r.delayedCount }}</td><td>{{ r.returnedCount }}</td><td>{{ r.generatedAt | date:'medium' }}</td></tr> }
+      @empty { <tr><td colspan="8" class="empty"><span class="empty-icon">REP</span><strong>No reports for this type</strong><p>Generate a report to populate analytics history.</p></td></tr> }
+    </tbody>
+  </table></div>
+  <app-pagination [total]="filtered().length" [page]="page()" (pageChange)="page.set($event)" />
+</section>

@@ -1,0 +1,12 @@
+.auth-wrap { min-height: calc(100vh - 72px); display: grid; place-items: center; padding: 32px; background: linear-gradient(135deg, #f0fdfa, #fff); }
+.auth-card { width: min(460px, 100%); padding: 28px; }
+.auth-card .btn { width: 100%; }
+.stepper { display: flex; gap: 8px; margin-bottom: 16px; }
+.step { flex: 1; height: 8px; border-radius: 99px; background: var(--card-border); }
+.step.active { background: var(--primary); }
+.error-text {
+  color: #dc2626;
+  font-size: 12px;
+  margin-top: 4px;
+  display: block;
+}

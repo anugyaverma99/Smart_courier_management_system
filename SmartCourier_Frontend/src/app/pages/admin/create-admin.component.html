@@ -1,0 +1,47 @@
+<!-- create admin page -->
+<main class="auth-wrap">
+
+  <form class="card auth-card" (ngSubmit)="createAdmin()">
+
+    <h1>Create Admin</h1>
+    <p>Only existing admins can create new admin accounts.</p>
+
+    <!-- error message -->
+    @if (error()) {
+      <div class="notice error">{{ error() }}</div>
+    }
+
+    <!-- success message -->
+    @if (success()) {
+      <div class="notice success">{{ success() }}</div>
+    }
+
+    <!-- admin form fields -->
+    <div class="field">
+      <label>Full Name</label>
+      <input [(ngModel)]="fullName" name="fullName" required />
+    </div>
+
+    <div class="field">
+      <label>Email</label>
+      <input [(ngModel)]="email" name="email" type="email" required />
+    </div>
+
+    <div class="field">
+      <label>Phone</label>
+      <input [(ngModel)]="phone" name="phone" required />
+    </div>
+
+    <div class="field">
+      <label>Password</label>
+      <input [(ngModel)]="password" name="password" type="password" required />
+    </div>
+
+    <!-- submit button -->
+    <button class="btn" type="submit" [disabled]="loading()">
+      {{ loading() ? 'Creating...' : 'Create Admin' }}
+    </button>
+
+  </form>
+
+</main>

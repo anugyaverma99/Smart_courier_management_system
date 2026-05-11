@@ -1,0 +1,18 @@
+<!-- upload documents page -->
+<section class="page">
+  <div class="page-head"><div><h1>Upload Documents</h1><p>Attach invoices, labels, and handover documents to an existing delivery.</p></div></div>
+  @if (data.error()) { <div class="notice error">{{ data.error() }}</div> }
+  @if (data.success()) { <div class="notice success">{{ data.success() }}</div> }
+  <!-- upload form -->
+  <form class="card" (ngSubmit)="submit()">
+    <div class="form-grid">
+      <!-- select delivery to attach document to -->
+      <div class="field"><label>Delivery</label><select [(ngModel)]="deliveryId" name="deliveryId" required><option value="">Select delivery</option>@for (d of data.deliveries(); track d.id) { <option [value]="d.id">{{ d.trackingNumber }} · {{ d.receiverAddress.city }}</option> }</select></div>
+      <!-- document type selector -->
+      <div class="field"><label>Document type</label><select name="type" [(ngModel)]="documentType"><option>INVOICE</option><option>LABEL</option><option>ID_PROOF</option></select></div>
+      <!-- file picker -->
+      <div class="field"><label>File</label><input type="file" (change)="pick($event)" required></div>
+    </div>
+    <button class="btn" type="submit" [disabled]="!selected() || !file() || data.loading()">Upload</button>
+  </form>
+</section>

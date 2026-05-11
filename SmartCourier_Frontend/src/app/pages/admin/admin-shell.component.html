@@ -1,0 +1,7 @@
+<!-- admin panel layout with sidebar and content using diplay:flex-->
+<div class="app-shell">
+  <!-- sidebar navigation -->
+  <app-sidebar [links]="links" />
+  <!-- page content rendered by child routes -->
+  <main class="content"><router-outlet /></main>
+</div>

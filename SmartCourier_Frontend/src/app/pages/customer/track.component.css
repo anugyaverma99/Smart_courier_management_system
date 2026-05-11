@@ -1,0 +1,10 @@
+.timeline {
+  display: grid;
+  gap: 12px;
+}
+
+.event {
+  border-left: 3px solid var(--primary);
+  padding: 12px;
+  background: #f8fffd;
+}

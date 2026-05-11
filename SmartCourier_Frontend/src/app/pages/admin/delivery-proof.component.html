@@ -1,0 +1,74 @@
+<!-- delivery proof page -->
+<section class="page">
+  <div class="page-head">
+    <div>
+      <span class="eyebrow">Confirmation</span>
+      <h1>Delivery Proof</h1>
+      <p>Submit recipient confirmation and optional proof image for completed deliveries.</p>
+    </div>
+  </div>
+  @if (data.error()) { <div class="notice error">{{ data.error() }}</div> }
+  @if (data.success()) { <div class="notice success">{{ data.success() }}</div> }
+
+  <div class="grid detail-grid">
+    <!-- proof submission form -->
+    <form class="card" (ngSubmit)="submit()">
+      <h2>Submit Proof</h2>
+      <div class="field">
+        <label>Delivery</label>
+        <select name="deliveryId" [(ngModel)]="deliveryId" required>
+          <option value="">Select delivery</option>
+          @for (d of data.deliveries(); track d.id) {
+            <option [value]="d.id">{{ d.trackingNumber }} - {{ d.receiverAddress.city }} - {{ d.status }}</option>
+          }
+        </select>
+      </div>
+      <div class="form-grid">
+        <div class="field">
+          <label>Received by</label>
+          <input name="receivedBy" [(ngModel)]="receivedBy" placeholder="Recipient name" required>
+        </div>
+        <div class="field">
+          <label>Proof image</label>
+          <input type="file" accept="image/*" (change)="pick($event)">
+        </div>
+      </div>
+      <div class="field">
+        <label>Remarks</label>
+        <textarea name="remarks" [(ngModel)]="remarks" placeholder="Delivered at reception, signed by recipient, etc."></textarea>
+      </div>
+      @if (selected() && selected()?.status !== 'OUT_FOR_DELIVERY') {
+        <div class="notice error">Proof can only be submitted for deliveries that are OUT_FOR_DELIVERY.</div>
+      }
+      <button class="btn" type="submit" [disabled]="!selected() || selected()?.status !== 'OUT_FOR_DELIVERY' || !receivedBy() || data.loading()">Submit Proof</button>
+    </form>
+
+    <!-- selected delivery preview -->
+    <div class="card">
+      <h2>Selected Delivery</h2>
+      @if (selected(); as d) {
+        <div class="record-head">
+          <div>
+            <span class="micro">Tracking number</span>
+            <h2>{{ d.trackingNumber }}</h2>
+          </div>
+          <span class="status-badge status-{{ d.status }}">{{ d.status }}</span>
+        </div>
+        <div class="route-summary">
+          <div><span class="micro">From</span><strong>{{ d.senderAddress.city }}</strong><small>{{ d.senderAddress.name }}</small></div>
+          <div class="route-line"></div>
+          <div><span class="micro">To</span><strong>{{ d.receiverAddress.city }}</strong><small>{{ d.receiverAddress.name }}</small></div>
+        </div>
+        @if (existingProof(); as proof) {
+          <div class="proof-box">
+            <strong>Existing proof: {{ proof.receivedBy }}</strong>
+            <p>{{ proof.remarks || 'Proof submitted' }}</p>
+            <p class="muted">{{ proof.submittedBy }}</p>
+          </div>
+        }
+      } @else {
+        <div class="empty"><span class="empty-icon">POD</span><strong>No delivery selected</strong><p>Select a delivery to attach proof.</p></div>
+      }
+    </div>
+  </div>
+</section>

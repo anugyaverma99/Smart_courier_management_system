@@ -1,0 +1,46 @@
+<!-- create delivery page -->
+<section class="page">
+  <div class="page-head"><div><h1>Create Delivery</h1><p>A validated booking flow that immediately appears in dashboard and admin monitor after creation.</p></div><a class="btn secondary" routerLink="/customer">Back</a></div>
+  @if (data.error()) { <div class="notice error">{{ data.error() }}</div> }
+  @if (data.success()) { <div class="notice success">{{ data.success() }}</div> }
+  <form class="card" (ngSubmit)="submit()">
+    <!-- step indicator -->
+    <div class="stepper"><span class="step" [class.active]="step() >= 1"></span><span class="step" [class.active]="step() >= 2"></span><span class="step" [class.active]="step() >= 3"></span></div>
+    <!-- step 1: sender address -->
+    @if (step() === 1) { <h2>Sender</h2><ng-container *ngTemplateOutlet="address; context: { item: sender }" /> }
+    <!-- step 2: receiver address -->
+    @if (step() === 2) { <h2>Receiver</h2><ng-container *ngTemplateOutlet="address; context: { item: receiver }" /> }
+    <!-- step 3: package details -->
+    @if (step() === 3) {
+      <h2>Package</h2>
+      <div class="form-grid">
+        <div class="field"><label>Description</label><input name="description" [(ngModel)]="pkg.description" required></div>
+        <div class="field"><label>Service</label><select name="serviceType" [(ngModel)]="pkg.serviceType"><option value="domestic">Domestic</option><option value="express">Express</option><option value="international">International</option></select></div>
+        <div class="field"><label>Weight kg</label><input name="weight" type="number" [(ngModel)]="pkg.weightKg" min="0.1" required></div>
+        <div class="field"><label>Declared value</label><input name="declared" type="number" [(ngModel)]="pkg.declaredValue" min="0" required></div>
+        <div class="field"><label>Length cm</label><input name="length" type="number" [(ngModel)]="pkg.lengthCm" min="0" required></div>
+        <div class="field"><label>Width cm</label><input name="width" type="number" [(ngModel)]="pkg.widthCm" min="0" required></div>
+        <div class="field"><label>Height cm</label><input name="height" type="number" [(ngModel)]="pkg.heightCm" min="0" required></div>
+        <div class="field"><label>Pickup time</label><input name="pickup" type="datetime-local" [(ngModel)]="pickupScheduledAt" required></div>
+      </div>
+    }
+    <div class="toolbar">
+      <button class="btn secondary" type="button" (click)="step.set(step() - 1)" [disabled]="step() === 1">Prev</button>
+      @if (step() < 3) { <button class="btn" type="button" (click)="next()">Next</button> }
+      @else { <button class="btn" type="submit" [disabled]="data.loading()">Create Delivery</button> }
+    </div>
+  </form>
+  <!-- reusable address form template -->
+  <ng-template #address let-item="item">
+    <div class="form-grid">
+      <div class="field"><label>Name</label><input name="{{ step() }}name" [(ngModel)]="item.name" required></div>
+      <div class="field"><label>Phone</label><input name="{{ step() }}phone" [(ngModel)]="item.phone" required pattern="[0-9]{10}"></div>
+      <div class="field"><label>Email</label><input name="{{ step() }}email" type="email" [(ngModel)]="item.email"></div>
+      <div class="field"><label>Address</label><input name="{{ step() }}address" [(ngModel)]="item.addressLine" required></div>
+      <div class="field"><label>City</label><input name="{{ step() }}city" [(ngModel)]="item.city" required></div>
+      <div class="field"><label>State</label><input name="{{ step() }}state" [(ngModel)]="item.state" required></div>
+      <div class="field"><label>Pincode</label><input name="{{ step() }}zip" [(ngModel)]="item.zipCode" required pattern="[0-9]{6}"></div>
+      <div class="field"><label>Country</label><input name="{{ step() }}country" [(ngModel)]="item.country" required></div>
+    </div>
+  </ng-template>
+</section>

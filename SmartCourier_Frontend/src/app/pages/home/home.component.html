@@ -1,0 +1,70 @@
+<!-- home landing page -->
+<main>
+  <!-- hero section  -->
+  <section class="hero">
+    <div class="hero-inner">
+      <div>
+        <span class="eyebrow">Reliable courier operations</span>
+        <h1>Move every parcel with clarity, speed, and proof.</h1>
+        <p>FastDrop connects booking, hub routing, live tracking, exceptions, documents, and reports into one courier workspace.</p>
+        <div class="toolbar compact">
+          @if (auth.isAdmin()) { <a class="btn" routerLink="/admin">Open Admin Console</a> }
+          @else if (auth.isCustomer()) { <a class="btn" routerLink="/customer">Open Dashboard</a> }
+          @else { <a class="btn" routerLink="/register">Start Shipping</a> <a class="btn ghost" routerLink="/track">Track Package</a> }
+        </div>
+      </div>
+      <div class="hero-panel floating-card">
+        <div class="mock-head"><span class="status-dot"></span><strong>FDX-48291</strong><span class="status-badge status-IN_TRANSIT">IN_TRANSIT</span></div>
+        <div class="route-summary">
+          <div><span class="micro">Origin</span><strong>Delhi</strong><small>Booked 09:30</small></div>
+          <div class="route-line"></div>
+          <div><span class="micro">Destination</span><strong>Mumbai</strong><small>ETA Today</small></div>
+        </div>
+        <div class="timeline compact-timeline">
+          <div class="event"><strong>Picked up</strong><p>Parcel scanned at Delhi Hub</p></div>
+          <div class="event"><strong>In transit</strong><p>Moving through regional network</p></div>
+        </div>
+      </div>
+    </div>
+  </section>
+  <!-- stats bar -->
+  <section class="stats-bar">
+    <div><strong>50K+</strong><span>Deliveries</span></div>
+    <div><strong>99%</strong><span>On Time</span></div>
+    <div><strong>24/7</strong><span>Support</span></div>
+    <div><strong>500+</strong><span>Cities</span></div>
+  </section>
+  <!-- feature highlights -->
+  <section class="feature-band">
+    <div class="section-title"><span class="eyebrow">Platform</span><h2>Everything your courier team needs</h2></div>
+    <div class="feature-grid">
+      <div class="card feature-card"><span class="feature-icon">GPS</span><h2>Live Tracking</h2><p>Timeline events stay connected to customer and admin views.</p></div>
+      <div class="card feature-card"><span class="feature-icon">POD</span><h2>Proof of Delivery</h2><p>Delivery proof appears directly beside shipment history.</p></div>
+      <div class="card feature-card"><span class="feature-icon">RPT</span><h2>Smart Reports</h2><p>Operational reports include visual delivery breakdowns.</p></div>
+      <div class="card feature-card"><span class="feature-icon">HUB</span><h2>Hub Management</h2><p>Assign active hubs and keep monitor rows meaningful.</p></div>
+    </div>
+  </section>
+  <!-- workflow steps -->
+  <section class="how-band">
+    <div class="section-title"><span class="eyebrow">Workflow</span><h2>Book → Pickup → Transit → Delivered</h2></div>
+    <div class="steps">
+      <div><span>01</span><strong>Book</strong><p>Create a delivery with sender, receiver, package, and value.</p></div>
+      <div><span>02</span><strong>Pickup</strong><p>Operations records scan events and hub movement.</p></div>
+      <div><span>03</span><strong>Transit</strong><p>Monitor status, exceptions, and assigned hub in real time.</p></div>
+      <div><span>04</span><strong>Delivered</strong><p>Close the loop with proof, documents, and reports.</p></div>
+    </div>
+  </section>
+  <!-- quick track CTA -->
+  <section class="track-band">
+    <div class="card track-card">
+      <div><span class="eyebrow">Quick lookup</span><h2>Track a package</h2><p>Enter a tracking number to open the live timeline.</p></div>
+      <a class="btn" routerLink="/track">Open Tracking</a>
+    </div>
+  </section>
+  <!-- footer -->
+  <footer class="footer">
+    <div class="brand"><span class="logo-mark small">📦</span><span><strong>Fast</strong><em>Drop</em></span></div>
+    <div>Quick links · Tracking · Reports · Support</div>
+    <div>support&#64;fastdrop.local · 2026 FastDrop</div>
+  </footer>
+</main>

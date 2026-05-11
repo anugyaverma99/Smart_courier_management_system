@@ -1,0 +1,23 @@
+<!-- track delivery page -->
+<main class="content"><section class="page">
+  <div class="page-head"><div><h1>Track Delivery</h1><p>Search by tracking number and see the same timeline used inside delivery detail.</p></div></div>
+  <!-- search form -->
+  <div class="card">
+    <!-- login warning for unauthenticated users -->
+    @if (!auth.isLoggedIn()) { <div class="notice error">Backend tracking APIs require a logged-in customer or admin token. This route is public, but live lookup needs login.</div> }
+    @if (error()) { <div class="notice error">{{ error() }}</div> }
+    <div class="toolbar"><input placeholder="Tracking number" [(ngModel)]="trackingNumber"><button class="btn" (click)="search()" [disabled]="loading() || !trackingNumber()">Track</button></div>
+  </div>
+  <!-- tracking results -->
+  @if (delivery(); as d) {
+    <div class="card">
+      <h2>{{ d.trackingNumber }}</h2>
+      <p><span class="badge">{{ latestStatus() }}</span> {{ d.senderAddress.city }} to {{ d.receiverAddress.city }}</p>
+      <!-- tracking timeline -->
+      <div class="timeline">
+        @for (e of events(); track e.id) { <div class="event"><strong>{{ e.status }}</strong><p>{{ e.location }} · {{ e.eventTime | date:'medium' }}</p><p>{{ e.remarks }}</p></div> }
+        @empty { <div class="empty">No tracking events yet.</div> }
+      </div>
+    </div>
+  }
+</section></main>

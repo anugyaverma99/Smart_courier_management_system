@@ -1,0 +1,88 @@
+<!-- delivery detail page -->
+<section class="page">
+  <div class="page-head">
+    <div>
+      <span class="eyebrow">Delivery record</span>
+      <h1>Delivery Detail</h1>
+      <p>Package, route, uploaded documents, proof of delivery, and timeline stay connected here.</p>
+    </div>
+    <div class="toolbar compact">
+      <a class="btn secondary" routerLink="/customer/upload">Upload Documents</a>
+      <a class="btn ghost" routerLink="/customer">Back</a>
+    </div>
+  </div>
+  @if (data.error()) { <div class="notice error">{{ data.error() }}</div> }
+  @if (delivery(); as d) {
+    <!-- delivery info cards -->
+    <div class="grid detail-grid">
+      <div class="card">
+        <div class="record-head">
+          <div>
+            <span class="micro">Tracking number</span>
+            <h2>{{ d.trackingNumber }}</h2>
+          </div>
+          <span class="status-badge status-{{ d.status }}">{{ d.status }}</span>
+        </div>
+        <div class="route-summary">
+          <div><span class="micro">From</span><strong>{{ d.senderAddress.city }}</strong><small>{{ d.senderAddress.name }}</small></div>
+          <div class="route-line"></div>
+          <div><span class="micro">To</span><strong>{{ d.receiverAddress.city }}</strong><small>{{ d.receiverAddress.name }}</small></div>
+        </div>
+        <div class="info-grid">
+          <div><span>Charge</span><strong>{{ d.charge | currency:'INR' }}</strong></div>
+          <div><span>Pickup</span><strong>{{ d.pickupScheduledAt | date:'medium' }}</strong></div>
+          <div><span>Package</span><strong>{{ d.packageDetails.description }}</strong></div>
+          <div><span>Declared value</span><strong>{{ d.packageDetails.declaredValue | currency:'INR' }}</strong></div>
+        </div>
+
+        <!-- uploaded documents list -->
+        <h2>Documents</h2>
+        <div class="timeline">
+          @for (doc of documents(); track doc.id) {
+            <div class="event">
+              <strong>{{ doc.documentType }}</strong>
+              <p>{{ doc.fileName }} · uploaded {{ doc.uploadedAt | date:'medium' }}</p>
+              <p>{{ doc.uploadedBy }}</p>
+            </div>
+          } @empty { <div class="empty"><span class="empty-icon">DOC</span><strong>No documents yet</strong><p>Upload invoices, labels, or identity proof for this delivery.</p></div> }
+        </div>
+      </div>
+
+      <div class="grid">
+        <div class="card">
+          <!-- tracking timeline events -->
+          <h2>Tracking Timeline</h2>
+          <div class="timeline">
+            @for (e of events(); track e.id) {
+              <div class="event">
+                <strong>{{ e.status }}</strong>
+                <p>{{ e.location }} · {{ e.eventTime | date:'medium' }}</p>
+                <p>{{ e.remarks }}</p>
+              </div>
+            } @empty { <div class="empty"><span class="empty-icon">GPS</span><strong>No tracking events yet</strong><p>The first event appears when operations updates movement.</p></div> }
+          </div>
+        </div>
+        <div class="card">
+          <!-- proof of delivery section -->
+          <h2>Proof of Delivery</h2>
+          @if (proof(); as p) {
+            <div class="proof-box">
+              <strong>Received by {{ p.receivedBy }}</strong>
+              <p>{{ p.remarks || 'Proof submitted' }}</p>
+              @if (proofImage()) {
+                <img class="proof-image" [src]="proofImage()!" alt="Delivery proof image">
+              } @else if (p.proofImagePath) {
+                <p class="muted">Image saved on server: {{ p.proofImagePath }}</p>
+              }
+              <p class="muted">{{ p.deliveredAt | date:'medium' }} · {{ p.submittedBy }}</p>
+            </div>
+          } @else {
+            <div class="empty"><span class="empty-icon">POD</span><strong>No proof submitted</strong><p>Proof will appear after final delivery confirmation.</p></div>
+          }
+        </div>
+      </div>
+    </div>
+  } @else {
+    <div class="card empty"><span class="empty-icon">LOAD</span><strong>Loading delivery details...</strong><p>Waiting for the delivery record to arrive from the backend.</p></div>
+  }
+</section>

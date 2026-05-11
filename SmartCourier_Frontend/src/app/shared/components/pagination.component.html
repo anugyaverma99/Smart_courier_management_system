@@ -1,0 +1,15 @@
+<!-- pagination controls - only shown when there are items -->
+@if (total() > 0) {
+  <div class="pagination">
+    <!-- showing range text -->
+    <span class="muted">Showing {{ start() }}-{{ end() }} of {{ total() }}</span>
+    <!-- page buttons -->
+    <div class="pages">
+      <button (click)="pageChange.emit(page() - 1)" [disabled]="page() === 1">Prev</button>
+      @for (p of visiblePages(); track p) {
+        <button [class.active]="p === page()" (click)="pageChange.emit(p)">{{ p }}</button>
+      }
+      <button (click)="pageChange.emit(page() + 1)" [disabled]="page() === pages()">Next</button>
+    </div>
+  </div>
+}

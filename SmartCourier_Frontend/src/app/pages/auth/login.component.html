@@ -1,0 +1,70 @@
+<!-- login page wrapper -->
+<main class="auth-wrap">
+  <form class="card auth-card" (ngSubmit)="submit()" #f="ngForm">
+
+    <h1>Login</h1>
+    <p>Access your deliveries or operations console.</p>
+
+    <!-- show error message if login fails -->
+    @if (error()) {
+      <div class="notice error">
+        {{ error() }}
+      </div>
+    }
+
+    <!-- email input with validation -->
+    <div class="field">
+      <label>Email</label>
+
+      <input
+        name="email"
+        type="email"
+        [(ngModel)]="email"
+        required
+        email
+        #emailRef="ngModel"
+      />
+
+      @if ((emailRef.invalid && emailRef.touched) || (f.submitted && emailRef.invalid)) {
+        <small class="error-text">
+          Enter a valid email (example: user&#64;at gmail.com)
+        </small>
+      }
+    </div>
+
+    <!-- password input with validation -->
+    <div class="field">
+      <label>Password</label>
+
+      <input
+        name="password"
+        type="password"
+        [(ngModel)]="password"
+        required
+        minlength="6"
+        #passRef="ngModel"
+      />
+
+      @if ((passRef.invalid && passRef.touched) || (f.submitted && passRef.invalid)) {
+        <small class="error-text">
+          Password must be at least 6 characters
+        </small>
+      }
+    </div>
+
+    <!-- submit button with loading state -->
+    <button
+      class="btn"
+      type="submit"
+      [disabled]="loading() || f.invalid"
+    >
+      {{ loading() ? 'Signing in...' : 'Login' }}
+    </button>
+
+    <!-- link to register page -->
+    <p>
+      New customer? <a routerLink="/register">Create an account</a>
+    </p>
+
+  </form>
+</main>

@@ -1,0 +1,50 @@
+<!-- customer dashboard page -->
+<section class="page">
+  <div class="page-head"><div><h1>Customer Dashboard</h1><p>Your booked deliveries, live statuses, exceptions, and tracking access.</p></div><a class="btn" routerLink="/customer/create">New Delivery</a></div>
+  @if (data.error()) { <div class="notice error">{{ data.error() }}</div> }
+  @if (data.success()) { <div class="notice success">{{ data.success() }}</div> }
+  <!-- delivery stats cards -->
+  <div class="grid stats">
+    <div class="card"><div class="stat-value">{{ data.customerStats().total }}</div><div class="stat-label">Total</div></div>
+    <div class="card"><div class="stat-value">{{ data.customerStats().active }}</div><div class="stat-label">Active</div></div>
+    <div class="card"><div class="stat-value">{{ data.customerStats().delivered }}</div><div class="stat-label">Delivered</div></div>
+    <div class="card"><div class="stat-value">{{ data.customerStats().exceptions }}</div><div class="stat-label">Exceptions</div></div>
+  </div>
+  <!-- recent deliveries and attention panels -->
+  <div class="grid dashboard-lanes">
+    <div class="card">
+      <h2>Recent Deliveries</h2>
+      <div class="mini-list">
+        @for (d of recent(); track d.id) {
+          <a class="mini-row" [routerLink]="['/customer/delivery', d.id]"><span>{{ d.trackingNumber }} · {{ d.receiverAddress.city }}</span><span class="badge">{{ d.status }}</span></a>
+        } @empty { <div class="empty">Create a delivery to start seeing live movement here.</div> }
+      </div>
+    </div>
+    <div class="card">
+      <h2>Needs Attention</h2>
+      <div class="mini-list">
+        @for (d of attention(); track d.id) {
+          <a class="mini-row" [routerLink]="['/customer/delivery', d.id]"><span>{{ d.trackingNumber }}</span><span class="badge bad">{{ d.status }}</span></a>
+        } @empty { <div class="empty">No delayed, failed, or returned shipments.</div> }
+      </div>
+    </div>
+  </div>
+  <!-- search and filter toolbar -->
+  <div class="toolbar">
+    <input placeholder="Search tracking, city, receiver" [(ngModel)]="search">
+    <select [(ngModel)]="status"><option value="">All statuses</option>@for (s of statuses; track s) { <option [value]="s">{{ s }}</option> }</select>
+  </div>
+  <!-- deliveries table -->
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Tracking</th><th>Receiver</th><th>Route</th><th>Status</th><th>Charge</th><th></th></tr></thead>
+      <tbody>
+        @for (d of pageItems(); track d.id) {
+          <tr><td>{{ d.trackingNumber }}</td><td>{{ d.receiverAddress.name }}</td><td>{{ d.senderAddress.city }} to {{ d.receiverAddress.city }}</td><td><span class="badge" [class.bad]="isBad(d.status)" [class.good]="d.status === 'DELIVERED'">{{ d.status }}</span></td><td>{{ d.charge | currency:'INR' }}</td><td><a class="btn secondary" [routerLink]="['/customer/delivery', d.id]">Open</a></td></tr>
+        } @empty { <tr><td colspan="6" class="empty">{{ data.loading() ? 'Loading deliveries...' : 'No deliveries match the current view.' }}</td></tr> }
+      </tbody>
+    </table>
+  </div>
+  <!-- pagination controls -->
+  <app-pagination [total]="filtered().length" [page]="page()" (pageChange)="page.set($event)" />
+</section>

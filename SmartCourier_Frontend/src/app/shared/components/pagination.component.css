@@ -1,0 +1,10 @@
+.pagination {
+  display: flex;
+  justify-content: space-between;
+}
+
+.pages button {
+  min-width: 36px;
+  height: 36px;
+}
+.muted { color: var(--text-secondary); }
