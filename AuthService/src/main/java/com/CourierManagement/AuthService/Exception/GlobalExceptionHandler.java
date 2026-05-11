@@ -6,6 +6,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
+
+import com.CourierManagement.AuthService.Dto.ErrorResponse;
+
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
@@ -36,7 +39,8 @@ public class GlobalExceptionHandler {
      return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of(
              "timestamp", LocalDateTime.now(),
              "status", 400,
-             "error", ex.getMessage()
+             "error", ex.getMessage(),
+             "code","AUTH_ERROR"
      ));
  }
 
@@ -46,7 +50,8 @@ public class GlobalExceptionHandler {
      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of(
              "timestamp", LocalDateTime.now(),
              "status", 500,
-             "error", "Something went wrong"
+             "error", ex.getMessage() == null ? "Something went wrong" : ex.getMessage()
      ));
  }
+ 
 }
